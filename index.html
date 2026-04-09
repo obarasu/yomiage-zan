@@ -1005,8 +1005,12 @@ function buildDisplayItems() {
 // Speech Text Builder
 // ══════════════════════════════════
 function buildSpeechText() {
+  // SSML format for precise pause control
+  const pauseMs = config.speed === 1 ? '600' : config.speed === 3 ? '300' : '450';
   const parts = [];
-  parts.push('願いましては、');
+  parts.push('<speak>');
+  parts.push('願いましては');
+  parts.push(`<break time="${pauseMs}ms"/>`);
 
   let currentMode = 'add';
 
@@ -1017,20 +1021,24 @@ function buildSpeechText() {
     const isSubtract = n < 0;
 
     if (isSubtract && currentMode === 'add') {
-      parts.push('ひいては、');
+      parts.push('ひいては');
+      parts.push(`<break time="200ms"/>`);
       currentMode = 'subtract';
     } else if (!isSubtract && currentMode === 'subtract') {
-      parts.push('くわえて、');
+      parts.push('くわえて');
+      parts.push(`<break time="200ms"/>`);
       currentMode = 'add';
     }
 
     if (isLast) {
-      parts.push(formatted + '円では。');
+      parts.push(formatted + '円では');
     } else {
-      parts.push(formatted + '円なり。');
+      parts.push(formatted + '円なり');
+      parts.push(`<break time="${pauseMs}ms"/>`);
     }
   });
 
+  parts.push('</speak>');
   return parts.join('');
 }
 

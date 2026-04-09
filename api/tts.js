@@ -43,13 +43,17 @@ module.exports = async function handler(req, res) {
   try {
     if (cloudKey && engine !== 'gemini') {
       // Cloud TTS - fast, reliable
+      // Detect SSML (starts with <speak>)
+      const isSSML = text.trim().startsWith('<speak>');
+      const input = isSSML ? { ssml: text } : { text };
+
       const resp = await fetch(
         `https://texttospeech.googleapis.com/v1/text:synthesize?key=${cloudKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            input: { text },
+            input,
             voice: { languageCode: 'ja-JP', name: 'ja-JP-Neural2-B' },
             audioConfig: { audioEncoding: 'MP3', speakingRate, pitch: -2.0 }
           })
