@@ -1046,13 +1046,13 @@ function buildSpeechText() {
       currentMode = 'add';
     }
 
-    // 末尾が4の場合、「よえん」→「よんえん」対策
-    const suffix = (absN % 10 === 4) ? formatted.slice(0, -1) + 'よん' : formatted;
+    // say-as cardinalで数字を正確に読ませる（カンマ区切り誤読防止）
+    const numTag = `<say-as interpret-as="cardinal">${absN}</say-as>`;
 
     if (isLast) {
-      parts.push(suffix + '円では');
+      parts.push(numTag + '円では');
     } else {
-      parts.push(suffix + '円なり');
+      parts.push(numTag + '円なり');
       parts.push(`<break time="${pauseMs}ms"/>`);
     }
   });
