@@ -316,7 +316,7 @@ h2 {
 }
 .play-number {
   color: #fff;
-  font-size: 4.5rem;
+  font-size: min(4.5rem, 12vw);
   font-weight: 900;
   text-align: center;
   min-height: 90px;
@@ -325,6 +325,9 @@ h2 {
   justify-content: center;
   transition: opacity 0.15s;
   padding: 0 16px;
+  width: 100%;
+  overflow: hidden;
+  word-break: break-all;
 }
 .play-reading {
   color: #888;
