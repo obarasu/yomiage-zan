@@ -848,28 +848,29 @@ function randInt(min, max) {
 }
 
 // 数字→日本語読み仮名変換（最大99万まで対応）
+// 各位をスペースで区切って、TTSが省略・誤読しにくくする
 function numberToYomi(n) {
   if (n === 0) return 'ゼロ';
-  // 「よん」は一の位・万の位で使う。「よ」は百/千/十の前では使わない（よんひゃく等にはならない）
   const ones = ['', 'いち', 'に', 'さん', 'よん', 'ご', 'ろく', 'なな', 'はち', 'きゅう'];
 
-  let result = '';
+  const parts = [];
 
   // 万の位（1万〜99万）
   if (n >= 10000) {
     const man = Math.floor(n / 10000);
-    // manが10以上の場合（十万の位）
     if (man >= 10) {
       const manJuu = Math.floor(man / 10);
       const manIchi = man % 10;
-      if (manJuu === 1) result += 'じゅう';
-      else result += ones[manJuu] + 'じゅう';
-      if (manIchi > 0) result += ones[manIchi];
-      result += 'まん';
+      let manStr = '';
+      if (manJuu === 1) manStr += 'じゅう';
+      else manStr += ones[manJuu] + 'じゅう';
+      if (manIchi > 0) manStr += ones[manIchi];
+      manStr += 'まん';
+      parts.push(manStr);
     } else if (man === 1) {
-      result += 'いちまん';
+      parts.push('いちまん');
     } else {
-      result += ones[man] + 'まん';
+      parts.push(ones[man] + 'まん');
     }
     n %= 10000;
   }
@@ -877,40 +878,38 @@ function numberToYomi(n) {
   // 千の位
   if (n >= 1000) {
     const sen = Math.floor(n / 1000);
-    if (sen === 1) result += 'せん';
-    else if (sen === 3) result += 'さんぜん';
-    else if (sen === 8) result += 'はっせん';
-    else result += ones[sen] + 'せん';
+    if (sen === 1) parts.push('せん');
+    else if (sen === 3) parts.push('さんぜん');
+    else if (sen === 8) parts.push('はっせん');
+    else parts.push(ones[sen] + 'せん');
     n %= 1000;
   }
 
   // 百の位
   if (n >= 100) {
     const hyaku = Math.floor(n / 100);
-    if (hyaku === 1) result += 'ひゃく';
-    else if (hyaku === 3) result += 'さんびゃく';
-    else if (hyaku === 6) result += 'ろっぴゃく';
-    else if (hyaku === 8) result += 'はっぴゃく';
-    else result += ones[hyaku] + 'ひゃく';
+    if (hyaku === 1) parts.push('ひゃく');
+    else if (hyaku === 3) parts.push('さんびゃく');
+    else if (hyaku === 6) parts.push('ろっぴゃく');
+    else if (hyaku === 8) parts.push('はっぴゃく');
+    else parts.push(ones[hyaku] + 'ひゃく');
     n %= 100;
   }
 
   // 十の位
   if (n >= 10) {
     const juu = Math.floor(n / 10);
-    if (juu === 1) result += 'じゅう';
-    else result += ones[juu] + 'じゅう';
+    if (juu === 1) parts.push('じゅう');
+    else parts.push(ones[juu] + 'じゅう');
     n %= 10;
   }
 
   // 一の位
   if (n > 0) {
-    result += ones[n];
+    parts.push(ones[n]);
   }
 
-  // 末尾が「よん」で終わる場合、TTSが「よ」と読むのを防ぐため
-  // 「よん」の後にスペースを入れない（呼び出し側で「えん」を付ける）
-  return result;
+  return parts.join(' ');
 }
 
 function buildDisplayItems() {
