@@ -1045,16 +1045,23 @@ async function startGame() {
   playStatus.textContent = '';
   progressBar.style.width = '0%';
 
-  // Fetch TTS audio
+  // Fetch TTS audio with retry
   let audio;
   try {
     audio = await fetchTTS(lastSpeechText);
   } catch (e) {
-    console.error('TTS failed:', e);
-    loadingOverlay.style.display = 'none';
-    playReading.textContent = '音声の準備に失敗しました';
-    setTimeout(() => goToSettings(), 2000);
-    return;
+    console.error('TTS failed, retrying...', e);
+    playReading.textContent = '再試行中...';
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      audio = await fetchTTS(lastSpeechText);
+    } catch (e2) {
+      console.error('TTS retry failed:', e2);
+      loadingOverlay.style.display = 'none';
+      playReading.textContent = '音声の準備に失敗しました。少し待ってからやり直してください。';
+      setTimeout(() => goToSettings(), 3000);
+      return;
+    }
   }
 
   currentAudio = audio;

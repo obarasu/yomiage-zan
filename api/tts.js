@@ -53,37 +53,45 @@ module.exports = async function handler(req, res) {
 
   const prompt = `以下のひらがなテキストを、そのまま一字一句正確に音読してください。${speedPrompt}読み上げ算の読み手の声色で、落ち着いたトーンで読んでください。テキストの内容を変えたり、数字を再解釈したりしないでください。書いてある通りに読むだけです。`;
 
-  try {
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-tts:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt + '\n\n' + text }] }],
-          generationConfig: {
-            responseModalities: ['AUDIO'],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: 'Orus' }
-              }
-            }
-          }
-        })
+  const requestBody = JSON.stringify({
+    contents: [{ parts: [{ text: prompt + '\n\n' + text }] }],
+    generationConfig: {
+      responseModalities: ['AUDIO'],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: { voiceName: 'Orus' }
+        }
       }
-    );
+    }
+  });
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-tts:generateContent?key=${apiKey}`;
 
+  // Try up to 2 times with delay
+  async function tryGenerate() {
+    const resp = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: requestBody
+    });
     if (!resp.ok) {
       const err = await resp.text();
-      return res.status(502).json({ error: 'Gemini TTS error', detail: err.slice(0, 300) });
+      throw new Error('Gemini TTS error ' + resp.status + ': ' + err.slice(0, 200));
     }
-
     const result = await resp.json();
     const parts = result?.candidates?.[0]?.content?.parts || [];
     const audioPart = parts.find(p => p.inlineData);
+    if (!audioPart) throw new Error('No audio in response');
+    return audioPart;
+  }
 
-    if (!audioPart) {
-      return res.status(422).json({ error: 'No audio in response' });
+  try {
+    let audioPart;
+    try {
+      audioPart = await tryGenerate();
+    } catch (firstErr) {
+      // Retry once after 2 seconds
+      await new Promise(r => setTimeout(r, 2000));
+      audioPart = await tryGenerate();
     }
 
     const mime = audioPart.inlineData.mimeType || '';
