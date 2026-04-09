@@ -64,10 +64,14 @@ module.exports = async function handler(req, res) {
       }
     }
   });
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-tts:generateContent?key=${apiKey}`;
+  // Try Pro first, fallback to Flash if quota exceeded
+  const models = [
+    'gemini-2.5-pro-preview-tts',
+    'gemini-2.5-flash-preview-tts'
+  ];
 
-  // Try up to 2 times with delay
-  async function tryGenerate() {
+  async function tryGenerate(model) {
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const resp = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -86,12 +90,15 @@ module.exports = async function handler(req, res) {
 
   try {
     let audioPart;
-    try {
-      audioPart = await tryGenerate();
-    } catch (firstErr) {
-      // Retry once after 2 seconds
-      await new Promise(r => setTimeout(r, 2000));
-      audioPart = await tryGenerate();
+    // Try each model in order (Pro first, then Flash as fallback)
+    for (const model of models) {
+      try {
+        audioPart = await tryGenerate(model);
+        break;
+      } catch (err) {
+        if (model === models[models.length - 1]) throw err;
+        // Try next model
+      }
     }
 
     const mime = audioPart.inlineData.mimeType || '';
