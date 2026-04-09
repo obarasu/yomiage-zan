@@ -1046,13 +1046,15 @@ function buildSpeechText() {
       currentMode = 'add';
     }
 
-    // say-as cardinalで数字を正確に読ませる（カンマ区切り誤読防止）
+    // say-as cardinalで数字を正確に読ませる + 末尾4の「よえん」対策
     const numTag = `<say-as interpret-as="cardinal">${absN}</say-as>`;
+    // 末尾4: 「円」を「えん」にして「よん」+「えん」が繋がるように
+    const yen = (absN % 10 === 4) ? 'えん' : '円';
 
     if (isLast) {
-      parts.push(numTag + '円では');
+      parts.push(numTag + yen + 'では');
     } else {
-      parts.push(numTag + '円なり');
+      parts.push(numTag + yen + 'なり');
       parts.push(`<break time="${pauseMs}ms"/>`);
     }
   });
