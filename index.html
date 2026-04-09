@@ -12,24 +12,24 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --primary-dark: #4f46e5;
-  --primary-bg: #eef2ff;
-  --accent: #f59e0b;
-  --success: #22c55e;
-  --success-bg: #dcfce7;
-  --danger: #ef4444;
-  --danger-bg: #fee2e2;
-  --bg: #f8fafc;
+  --primary: #000000;
+  --primary-light: #333333;
+  --primary-dark: #000000;
+  --primary-bg: #fafafa;
+  --accent: #0070f3;
+  --success: #0070f3;
+  --success-bg: #eef6ff;
+  --danger: #ee0000;
+  --danger-bg: #fff0f0;
+  --bg: #ffffff;
   --card: #ffffff;
-  --text: #1e293b;
-  --text-light: #64748b;
-  --border: #e2e8f0;
-  --radius: 16px;
-  --radius-sm: 12px;
-  --shadow: 0 4px 24px rgba(99,102,241,0.12);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --text: #171717;
+  --text-light: #666666;
+  --border: #eaeaea;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 html, body {
@@ -55,9 +55,11 @@ html, body {
 
 /* ── Typography ── */
 h1 {
-  font-size: 1.8rem;
-  color: var(--primary);
+  font-size: 1.6rem;
+  color: var(--text);
   text-align: center;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 h2 {
   font-size: 1.3rem;
@@ -86,18 +88,20 @@ h2 {
 .btn-primary {
   background: var(--primary);
   color: #fff;
-  box-shadow: var(--shadow);
+  border: 1px solid var(--primary);
 }
-.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:hover { opacity: 0.9; }
 
 .btn-secondary {
-  background: var(--border);
+  background: #fff;
   color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .btn-success {
-  background: var(--success);
+  background: var(--primary);
   color: #fff;
+  border: 1px solid var(--primary);
 }
 
 .btn-danger {
@@ -179,10 +183,10 @@ h2 {
 .settings-card {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 20px 16px;
+  padding: 24px 20px;
   width: 100%;
   max-width: 400px;
-  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -221,8 +225,8 @@ h2 {
 }
 .option-btn.selected {
   border-color: var(--primary);
-  background: var(--primary-bg);
-  color: var(--primary);
+  background: var(--primary);
+  color: #fff;
 }
 
 /* Speed stars */
@@ -244,20 +248,21 @@ h2 {
 }
 .styled-select {
   flex: 1;
-  padding: 12px 16px;
-  font-size: 1rem;
-  font-weight: 600;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  background: white;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fafafa;
   color: var(--text);
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%2364748b'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M5 7L1 3h8z' fill='%23666'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  padding-right: 36px;
+  padding-right: 32px;
+  transition: border-color 0.15s;
 }
 .styled-select:focus {
   border-color: var(--primary);
