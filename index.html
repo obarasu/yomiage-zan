@@ -873,21 +873,33 @@ function generateNumbers() {
   const digitAssignments = [];
 
   if (dMin === dMax) {
-    // Same digit count for all
     for (let i = 0; i < kuchi; i++) digitAssignments.push(dMin);
   } else {
-    // Guarantee at least one of min and one of max
-    digitAssignments.push(dMin);
-    digitAssignments.push(dMax);
-
-    // Fill remaining slots evenly across the range
-    for (let i = 2; i < kuchi; i++) {
-      // Cycle through digit range for even distribution
-      const d = dMin + ((i - 2) % digitRange);
+    // First: one of each digit in range (3-7桁 → 3,4,5,6,7)
+    for (let d = dMin; d <= dMax; d++) {
       digitAssignments.push(d);
     }
 
-    // Shuffle to randomize order
+    // If kuchi > range: add random extras from the range
+    while (digitAssignments.length < kuchi) {
+      const d = dMin + Math.floor(Math.random() * digitRange);
+      digitAssignments.push(d);
+    }
+
+    // If kuchi < range: trim to kuchi (keep min and max guaranteed)
+    while (digitAssignments.length > kuchi) {
+      // Remove a random one that's not min or max
+      const removable = [];
+      for (let i = 0; i < digitAssignments.length; i++) {
+        if (digitAssignments[i] !== dMin && digitAssignments[i] !== dMax) {
+          removable.push(i);
+        }
+      }
+      if (removable.length === 0) break;
+      digitAssignments.splice(removable[Math.floor(Math.random() * removable.length)], 1);
+    }
+
+    // Shuffle
     for (let i = digitAssignments.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [digitAssignments[i], digitAssignments[j]] = [digitAssignments[j], digitAssignments[i]];
