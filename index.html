@@ -847,6 +847,58 @@ function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// 数字→日本語読み仮名変換
+function numberToYomi(n) {
+  if (n === 0) return 'ゼロ';
+  const ones = ['', 'いち', 'に', 'さん', 'よん', 'ご', 'ろく', 'なな', 'はち', 'きゅう'];
+
+  let result = '';
+
+  // 万の位
+  if (n >= 10000) {
+    const man = Math.floor(n / 10000);
+    if (man === 1) result += 'いちまん';
+    else result += ones[man] + 'まん';
+    n %= 10000;
+  }
+
+  // 千の位
+  if (n >= 1000) {
+    const sen = Math.floor(n / 1000);
+    if (sen === 1) result += 'せん';
+    else if (sen === 3) result += 'さんぜん';
+    else if (sen === 8) result += 'はっせん';
+    else result += ones[sen] + 'せん';
+    n %= 1000;
+  }
+
+  // 百の位
+  if (n >= 100) {
+    const hyaku = Math.floor(n / 100);
+    if (hyaku === 1) result += 'ひゃく';
+    else if (hyaku === 3) result += 'さんびゃく';
+    else if (hyaku === 6) result += 'ろっぴゃく';
+    else if (hyaku === 8) result += 'はっぴゃく';
+    else result += ones[hyaku] + 'ひゃく';
+    n %= 100;
+  }
+
+  // 十の位
+  if (n >= 10) {
+    const juu = Math.floor(n / 10);
+    if (juu === 1) result += 'じゅう';
+    else result += ones[juu] + 'じゅう';
+    n %= 10;
+  }
+
+  // 一の位
+  if (n > 0) {
+    result += ones[n];
+  }
+
+  return result;
+}
+
 function buildDisplayItems() {
   const items = [];
   items.push({ text: '願いましては', number: '' });
@@ -871,24 +923,24 @@ function buildDisplayItems() {
 // ══════════════════════════════════
 function buildSpeechText() {
   const parts = [];
-  parts.push('願いましては〜〜、');
+  parts.push('ねがいましては〜〜、');
 
   numbers.forEach((n, i) => {
     const absN = Math.abs(n);
-    const formatted = absN.toLocaleString(); // カンマ区切りで正しい読みに
+    const yomi = numberToYomi(absN); // ひらがな読みで渡す
     const isLast = (i === numbers.length - 1);
 
     if (isLast) {
       if (n < 0) {
-        parts.push('ひく' + formatted + '円では〜。');
+        parts.push('ひく、' + yomi + 'えん、では〜。');
       } else {
-        parts.push(formatted + '円では〜。');
+        parts.push(yomi + 'えん、では〜。');
       }
     } else {
       if (n < 0) {
-        parts.push('ひく' + formatted + '円、');
+        parts.push('ひく、' + yomi + 'えん、');
       } else {
-        parts.push(formatted + '円なり〜、');
+        parts.push(yomi + 'えん、なり〜、');
       }
     }
   });
