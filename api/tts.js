@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
     : speed === 'veryfast' ? '速いペースで。'
     : 'ふつうのペースで。';
 
-  const prompt = `そろばんの読み上げ算の読み手として読んでください。${speedPrompt}桁を間違えないように注意して。`;
+  const prompt = `以下のひらがなテキストを、そのまま一字一句正確に音読してください。${speedPrompt}読み上げ算の読み手の声色で、落ち着いたトーンで読んでください。テキストの内容を変えたり、数字を再解釈したりしないでください。書いてある通りに読むだけです。`;
 
   try {
     const resp = await fetch(
