@@ -816,6 +816,20 @@ function showScreen(id) {
 
 function goToSettings() {
   cleanupAudio();
+  // Sync UI with current config
+  document.getElementById('digit-min-select').value = config.digitMin;
+  document.getElementById('digit-max-select').value = config.digitMax;
+  document.getElementById('kuchi-select').value = config.kuchi;
+  document.getElementById('toggle-show-number').checked = config.showNumber;
+  document.getElementById('toggle-auto-answer').checked = config.autoAnswer;
+  // Sync speed buttons
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('selected'));
+  const speedBtn = document.getElementById('btn-speed-' + config.speed);
+  if (speedBtn) speedBtn.classList.add('selected');
+  // Sync calc type buttons
+  document.querySelectorAll('#calc-type-options .option-btn').forEach(b => b.classList.remove('selected'));
+  const calcBtn = document.getElementById('btn-calc-' + (config.calcType === 'addsub' ? 'addsub' : 'add'));
+  if (calcBtn) calcBtn.classList.add('selected');
   showScreen('screen-settings');
 }
 
