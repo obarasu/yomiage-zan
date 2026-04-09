@@ -571,15 +571,35 @@ function digitToJapanese(d) {
   return map[d] || '';
 }
 
-function buildUtterance(text, rate) {
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ja-JP';
-  u.rate = rate || 1.0;
-  // Try to pick a Japanese voice
-  const voices = speechSynthesis.getVoices();
-  const jaVoice = voices.find(v => v.lang === 'ja-JP') || voices.find(v => v.lang.startsWith('ja'));
-  if (jaVoice) u.voice = jaVoice;
-  return u;
+// Google Cloud TTS
+async function speakTTS(text, speed) {
+  const speedKey = speed || config.speed;
+  const speedParam = speedKey === 'slow' ? 'slow' : speedKey === 'fast' ? 'fast' : speedKey === 'veryfast' ? 'veryfast' : 'normal';
+  try {
+    const res = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, speed: speedParam })
+    });
+    if (!res.ok) throw new Error('TTS API error');
+    const { audioContent } = await res.json();
+    const audio = new Audio('data:audio/mp3;base64,' + audioContent);
+    return new Promise((resolve) => {
+      audio.onended = resolve;
+      audio.onerror = resolve;
+      audio.play();
+    });
+  } catch (e) {
+    // Fallback to Web Speech API
+    return new Promise((resolve) => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 1.0;
+      u.onend = resolve;
+      u.onerror = resolve;
+      speechSynthesis.speak(u);
+    });
+  }
 }
 
 // ── Game Flow ──
@@ -598,25 +618,20 @@ function startGame() {
   progressBar.style.width = '0%';
 
   const sp = speedMap[config.speed];
-  const rate = sp.rate;
   const delay = sp.delay;
 
-  // Preload voices
-  speechSynthesis.getVoices();
-
   let step = 0;
-  const totalSteps = numbers.length + 2; // negaimashite + numbers + deha
+  const totalSteps = numbers.length + 2;
 
-  function next() {
+  async function next() {
     if (step === 0) {
-      // 願いましては
       playNumber.textContent = '';
       playReading.textContent = 'ねがいましては';
       playNumber.className = 'play-number flash-in';
-      const u = buildUtterance('ねがいましては', rate);
-      u.onend = () => { step++; setTimeout(next, 400); };
-      speechSynthesis.speak(u);
       progressBar.style.width = ((step + 1) / totalSteps * 100) + '%';
+      await speakTTS('ねがいましては');
+      step++;
+      setTimeout(next, 400);
     } else if (step <= numbers.length) {
       const idx = step - 1;
       const n = numbers[idx];
@@ -633,7 +648,6 @@ function startGame() {
         speechText = reading + 'えん なり';
       }
 
-      // For anzan mode, don't show numbers
       if (mode === 'anzan') {
         playNumber.textContent = '🧠';
       } else {
@@ -643,32 +657,24 @@ function startGame() {
       playReading.textContent = speechText;
       progressBar.style.width = ((step + 1) / totalSteps * 100) + '%';
 
-      const u = buildUtterance(speechText, rate);
-      u.onend = () => {
-        step++;
-        setTimeout(next, Math.max(200, delay - 800));
-      };
-      speechSynthesis.speak(u);
+      await speakTTS(speechText);
+      step++;
+      setTimeout(next, Math.max(200, delay - 800));
     } else {
-      // では
       playNumber.textContent = '';
       playReading.textContent = 'では';
       progressBar.style.width = '100%';
-      const u = buildUtterance('では', rate);
-      u.onend = () => {
-        setTimeout(() => {
-          userAnswer = '';
-          isNegative = false;
-          updateAnswerDisplay();
-          updateMinusBtn();
-          showScreen('screen-answer');
-        }, 500);
-      };
-      speechSynthesis.speak(u);
+      await speakTTS('では');
+      setTimeout(() => {
+        userAnswer = '';
+        isNegative = false;
+        updateAnswerDisplay();
+        updateMinusBtn();
+        showScreen('screen-answer');
+      }, 500);
     }
   }
 
-  // Small initial delay
   setTimeout(next, 800);
 }
 
@@ -733,11 +739,7 @@ function retry() {
 // ── Init ──
 initSettings();
 
-// Preload voices
-if (speechSynthesis.onvoiceschanged !== undefined) {
-  speechSynthesis.onvoiceschanged = () => {};
-}
-speechSynthesis.getVoices();
+// Google Cloud TTS version - no voice preload needed
 </script>
 </body>
 </html>
