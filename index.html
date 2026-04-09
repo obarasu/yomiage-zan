@@ -571,35 +571,43 @@ function digitToJapanese(d) {
   return map[d] || '';
 }
 
-// Google Cloud TTS
-async function speakTTS(text, speed) {
-  const speedKey = speed || config.speed;
-  const speedParam = speedKey === 'slow' ? 'slow' : speedKey === 'fast' ? 'fast' : speedKey === 'veryfast' ? 'veryfast' : 'normal';
+// Google Cloud TTS - batch preload + play
+let preloadedAudios = [];
+
+async function preloadAllTTS(texts) {
+  const speedParam = config.speed === 'slow' ? 'slow' : config.speed === 'fast' ? 'fast' : config.speed === 'veryfast' ? 'veryfast' : 'normal';
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, speed: speedParam })
+      body: JSON.stringify({ texts, speed: speedParam })
     });
     if (!res.ok) throw new Error('TTS API error');
-    const { audioContent } = await res.json();
-    const audio = new Audio('data:audio/mp3;base64,' + audioContent);
-    return new Promise((resolve) => {
-      audio.onended = resolve;
-      audio.onerror = resolve;
-      audio.play();
-    });
+    const { audioContents } = await res.json();
+    return audioContents.map(ac => ac ? new Audio('data:audio/mp3;base64,' + ac) : null);
   } catch (e) {
-    // Fallback to Web Speech API
-    return new Promise((resolve) => {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'ja-JP';
-      u.rate = 1.0;
-      u.onend = resolve;
-      u.onerror = resolve;
-      speechSynthesis.speak(u);
-    });
+    return texts.map(() => null); // fallback will be used
   }
+}
+
+function playAudio(audio) {
+  if (!audio) return Promise.resolve();
+  return new Promise((resolve) => {
+    audio.onended = resolve;
+    audio.onerror = resolve;
+    audio.play().catch(resolve);
+  });
+}
+
+function speakFallback(text) {
+  return new Promise((resolve) => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP';
+    u.rate = 1.0;
+    u.onend = resolve;
+    u.onerror = resolve;
+    speechSynthesis.speak(u);
+  });
 }
 
 // ── Game Flow ──
@@ -620,51 +628,61 @@ function startGame() {
   const sp = speedMap[config.speed];
   const delay = sp.delay;
 
+  // Build all speech texts first
+  const speechTexts = ['ねがいましては'];
+  const displayTexts = [''];
+  numbers.forEach(n => {
+    const absN = Math.abs(n);
+    const reading = numberToJapanese(absN);
+    if (n < 0) {
+      speechTexts.push('ひく ' + reading + 'えん');
+      displayTexts.push('−' + absN.toLocaleString());
+    } else {
+      speechTexts.push(reading + 'えん なり');
+      displayTexts.push(absN.toLocaleString());
+    }
+  });
+  speechTexts.push('では');
+  displayTexts.push('');
+
+  // Show loading
+  playReading.textContent = '音声を準備中...';
+
+  // Preload all audio at once
+  preloadedAudios = await preloadAllTTS(speechTexts);
+
   let step = 0;
-  const totalSteps = numbers.length + 2;
+  const totalSteps = speechTexts.length;
 
   async function next() {
-    if (step === 0) {
-      playNumber.textContent = '';
-      playReading.textContent = 'ねがいましては';
-      playNumber.className = 'play-number flash-in';
-      progressBar.style.width = ((step + 1) / totalSteps * 100) + '%';
-      await speakTTS('ねがいましては');
-      step++;
-      setTimeout(next, 400);
-    } else if (step <= numbers.length) {
-      const idx = step - 1;
-      const n = numbers[idx];
-      const absN = Math.abs(n);
-      const isSubtract = n < 0;
-      const reading = numberToJapanese(absN);
+    if (step >= totalSteps) return;
 
-      let displayText, speechText;
-      if (isSubtract) {
-        displayText = '−' + absN.toLocaleString();
-        speechText = 'ひく ' + reading + 'えん';
-      } else {
-        displayText = absN.toLocaleString();
-        speechText = reading + 'えん なり';
-      }
+    const isFirst = step === 0;
+    const isLast = step === totalSteps - 1;
 
-      if (mode === 'anzan') {
-        playNumber.textContent = '🧠';
-      } else {
-        playNumber.textContent = displayText;
-      }
-      playNumber.className = 'play-number flash-in';
-      playReading.textContent = speechText;
-      progressBar.style.width = ((step + 1) / totalSteps * 100) + '%';
-
-      await speakTTS(speechText);
-      step++;
-      setTimeout(next, Math.max(200, delay - 800));
+    if (mode === 'anzan' && !isFirst && !isLast) {
+      playNumber.textContent = '🧠';
     } else {
-      playNumber.textContent = '';
-      playReading.textContent = 'では';
-      progressBar.style.width = '100%';
-      await speakTTS('では');
+      playNumber.textContent = displayTexts[step];
+    }
+    playNumber.className = 'play-number flash-in';
+    playReading.textContent = speechTexts[step];
+    progressBar.style.width = ((step + 1) / totalSteps * 100) + '%';
+
+    // Play preloaded audio or fallback
+    if (preloadedAudios[step]) {
+      await playAudio(preloadedAudios[step]);
+    } else {
+      await speakFallback(speechTexts[step]);
+    }
+
+    step++;
+
+    if (step < totalSteps) {
+      const pauseMs = isFirst ? 400 : Math.max(200, delay - 800);
+      setTimeout(next, pauseMs);
+    } else {
+      // Done - show answer screen
       setTimeout(() => {
         userAnswer = '';
         isNegative = false;
