@@ -316,7 +316,7 @@ h2 {
 }
 .play-number {
   color: #fff;
-  font-size: min(4.5rem, 12vw);
+  font-size: 4.5rem;
   font-weight: 900;
   text-align: center;
   min-height: 90px;
@@ -326,8 +326,7 @@ h2 {
   transition: opacity 0.15s;
   padding: 0 16px;
   width: 100%;
-  overflow: hidden;
-  word-break: break-all;
+  white-space: nowrap;
 }
 .play-reading {
   color: #888;
@@ -1179,8 +1178,12 @@ async function startGame() {
 
     if (config.showNumber) {
       playNumber.textContent = item.number;
+      // Auto-scale font size based on text length
+      const len = item.number.length;
+      playNumber.style.fontSize = len > 10 ? '2rem' : len > 7 ? '2.8rem' : len > 5 ? '3.5rem' : '4.5rem';
     } else {
       playNumber.textContent = itemIndex === 0 ? '' : '・';
+      playNumber.style.fontSize = '4.5rem';
     }
     playNumber.className = 'play-number flash-in';
     playReading.textContent = item.text;
@@ -1415,8 +1418,12 @@ async function replayWithCurrentNumbers(useCache) {
     const item = displayItems[itemIndex];
     if (config.showNumber) {
       playNumber.textContent = item.number;
+      // Auto-scale font size based on text length
+      const len = item.number.length;
+      playNumber.style.fontSize = len > 10 ? '2rem' : len > 7 ? '2.8rem' : len > 5 ? '3.5rem' : '4.5rem';
     } else {
       playNumber.textContent = itemIndex === 0 ? '' : '・';
+      playNumber.style.fontSize = '4.5rem';
     }
     playNumber.className = 'play-number flash-in';
     playReading.textContent = item.text;
