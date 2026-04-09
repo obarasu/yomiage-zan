@@ -1,5 +1,38 @@
 // /api/tts.js - Vercel serverless function for Gemini Pro TTS
 // Uses Generative Language API with Orus voice
+// Converts PCM to WAV for browser playback
+
+function pcmToWav(pcmBase64, sampleRate, channels, bitsPerSample) {
+  const pcm = Buffer.from(pcmBase64, 'base64');
+  const byteRate = sampleRate * channels * (bitsPerSample / 8);
+  const blockAlign = channels * (bitsPerSample / 8);
+  const dataSize = pcm.length;
+  const headerSize = 44;
+  const wav = Buffer.alloc(headerSize + dataSize);
+
+  // RIFF header
+  wav.write('RIFF', 0);
+  wav.writeUInt32LE(36 + dataSize, 4);
+  wav.write('WAVE', 8);
+
+  // fmt chunk
+  wav.write('fmt ', 12);
+  wav.writeUInt32LE(16, 16);
+  wav.writeUInt16LE(1, 20); // PCM
+  wav.writeUInt16LE(channels, 22);
+  wav.writeUInt32LE(sampleRate, 24);
+  wav.writeUInt32LE(byteRate, 28);
+  wav.writeUInt16LE(blockAlign, 30);
+  wav.writeUInt16LE(bitsPerSample, 32);
+
+  // data chunk
+  wav.write('data', 36);
+  wav.writeUInt32LE(dataSize, 40);
+  pcm.copy(wav, 44);
+
+  return wav.toString('base64');
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -13,7 +46,6 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.GEMINI_TTS_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'GEMINI_TTS_API_KEY not set' });
 
-  // Build prompt based on speed
   const speedPrompt = speed === 'slow' ? 'ゆっくりめのペースで。'
     : speed === 'fast' ? 'やや速いペースで。'
     : speed === 'veryfast' ? '速いペースで。'
@@ -54,9 +86,19 @@ module.exports = async function handler(req, res) {
       return res.status(422).json({ error: 'No audio in response' });
     }
 
+    const mime = audioPart.inlineData.mimeType || '';
+    const pcmData = audioPart.inlineData.data;
+
+    // Parse sample rate from mimeType (e.g., "audio/L16;codec=pcm;rate=24000")
+    const rateMatch = mime.match(/rate=(\d+)/);
+    const sampleRate = rateMatch ? parseInt(rateMatch[1]) : 24000;
+
+    // Convert PCM to WAV
+    const wavBase64 = pcmToWav(pcmData, sampleRate, 1, 16);
+
     return res.status(200).json({
-      audioContent: audioPart.inlineData.data,
-      mimeType: audioPart.inlineData.mimeType
+      audioContent: wavBase64,
+      mimeType: 'audio/wav'
     });
 
   } catch (err) {
