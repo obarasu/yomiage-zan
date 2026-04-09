@@ -910,21 +910,29 @@ function generateNumbers() {
   // First number always positive
   numbers.push(randomNumberWithDigits(digitAssignments[0]));
   let runningTotal = numbers[0];
+  let hasSubtraction = false;
+
+  // In addsub mode, pick a random slot (not first, not last) to guarantee at least one subtraction
+  const guaranteedSubIdx = config.calcType === 'addsub' && kuchi >= 3
+    ? randInt(1, kuchi - 2) : -1;
 
   for (let i = 1; i < kuchi; i++) {
     let n = randomNumberWithDigits(digitAssignments[i]);
 
-    // ~25% chance of subtraction in addsub mode
-    const doSubtract = config.calcType === 'addsub' && Math.random() < 0.25;
+    // Decide subtraction: guaranteed slot, or ~25% random, or forced if last chance and none yet
+    const isLastChance = (i === kuchi - 1) && !hasSubtraction && config.calcType === 'addsub';
+    const doSubtract = config.calcType === 'addsub' && (
+      i === guaranteedSubIdx || isLastChance || Math.random() < 0.25
+    );
 
     if (doSubtract) {
-      // Ensure running total doesn't go negative
       if (n > runningTotal) {
         n = randInt(1, Math.max(1, runningTotal - 1));
       }
       if (n > 0 && n <= runningTotal) {
         numbers.push(-n);
         runningTotal -= n;
+        hasSubtraction = true;
       } else {
         numbers.push(n);
         runningTotal += n;
