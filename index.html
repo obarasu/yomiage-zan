@@ -1224,11 +1224,18 @@ async function startGame() {
 
   // Sync display to audio time
   if (duration > 0) {
-    const itemDuration = duration / totalItems;
+    // First item (願いましては) gets ~15% of time, rest split evenly
+    const firstItemTime = duration * 0.12;
+    const restItemDuration = (duration - firstItemTime) / Math.max(1, totalItems - 1);
     displayInterval = setInterval(() => {
       if (!currentAudio) return;
       const elapsed = audio.currentTime;
-      const newItem = Math.min(Math.floor(elapsed / itemDuration), totalItems - 1);
+      let newItem;
+      if (elapsed < firstItemTime) {
+        newItem = 0;
+      } else {
+        newItem = Math.min(1 + Math.floor((elapsed - firstItemTime) / restItemDuration), totalItems - 1);
+      }
       updateDisplay(newItem);
       progressBar.style.width = Math.min(100, (elapsed / duration * 100)) + '%';
     }, 80);
@@ -1460,11 +1467,18 @@ async function replayWithCurrentNumbers(useCache) {
   }
 
   if (duration > 0) {
-    const itemDuration = duration / totalItems;
+    // First item (願いましては) gets ~15% of time, rest split evenly
+    const firstItemTime = duration * 0.12;
+    const restItemDuration = (duration - firstItemTime) / Math.max(1, totalItems - 1);
     displayInterval = setInterval(() => {
       if (!currentAudio) return;
       const elapsed = audio.currentTime;
-      const newItem = Math.min(Math.floor(elapsed / itemDuration), totalItems - 1);
+      let newItem;
+      if (elapsed < firstItemTime) {
+        newItem = 0;
+      } else {
+        newItem = Math.min(1 + Math.floor((elapsed - firstItemTime) / restItemDuration), totalItems - 1);
+      }
       updateDisplay(newItem);
       progressBar.style.width = Math.min(100, (elapsed / duration * 100)) + '%';
     }, 80);
