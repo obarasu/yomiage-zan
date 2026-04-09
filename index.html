@@ -835,6 +835,10 @@ function buildSpeechText() {
 // ══════════════════════════════════
 // TTS
 // ══════════════════════════════════
+// Persistent audio element to avoid iOS autoplay restrictions
+const persistentAudio = new Audio();
+let currentBlobUrl = null;
+
 async function fetchTTS(text) {
   const speedParam = speedToParam[config.speed] || 'normal';
   const res = await fetch('/api/tts', {
@@ -844,16 +848,28 @@ async function fetchTTS(text) {
   });
   if (!res.ok) throw new Error('TTS API error: ' + res.status);
   const { audioContent, mimeType } = await res.json();
-  // Convert base64 to Blob URL (more reliable than data URI for large audio)
   const byteChars = atob(audioContent);
   const byteArray = new Uint8Array(byteChars.length);
   for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
   const blob = new Blob([byteArray], { type: mimeType || 'audio/wav' });
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  audio.addEventListener('ended', () => URL.revokeObjectURL(url));
-  return audio;
+  if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+  currentBlobUrl = URL.createObjectURL(blob);
+  persistentAudio.src = currentBlobUrl;
+  persistentAudio.load();
+  return persistentAudio;
 }
+
+// Unlock audio on first user tap (iOS requirement)
+let audioUnlocked = false;
+document.addEventListener('click', () => {
+  if (!audioUnlocked) {
+    persistentAudio.play().then(() => {
+      persistentAudio.pause();
+      persistentAudio.currentTime = 0;
+      audioUnlocked = true;
+    }).catch(() => {});
+  }
+}, { once: false });
 
 // ══════════════════════════════════
 // Game Flow
