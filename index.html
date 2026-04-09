@@ -1033,10 +1033,13 @@ function buildSpeechText() {
       currentMode = 'add';
     }
 
+    // 末尾が4の場合、「よえん」→「よんえん」対策
+    const suffix = (absN % 10 === 4) ? formatted.slice(0, -1) + 'よん' : formatted;
+
     if (isLast) {
-      parts.push(formatted + '円では');
+      parts.push(suffix + '円では');
     } else {
-      parts.push(formatted + '円なり');
+      parts.push(suffix + '円なり');
       parts.push(`<break time="${pauseMs}ms"/>`);
     }
   });
