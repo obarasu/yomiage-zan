@@ -847,18 +847,29 @@ function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// 数字→日本語読み仮名変換
+// 数字→日本語読み仮名変換（最大99万まで対応）
 function numberToYomi(n) {
   if (n === 0) return 'ゼロ';
   const ones = ['', 'いち', 'に', 'さん', 'よん', 'ご', 'ろく', 'なな', 'はち', 'きゅう'];
 
   let result = '';
 
-  // 万の位
+  // 万の位（1万〜99万）
   if (n >= 10000) {
     const man = Math.floor(n / 10000);
-    if (man === 1) result += 'いちまん';
-    else result += ones[man] + 'まん';
+    // manが10以上の場合（十万の位）
+    if (man >= 10) {
+      const manJuu = Math.floor(man / 10);
+      const manIchi = man % 10;
+      if (manJuu === 1) result += 'じゅう';
+      else result += ones[manJuu] + 'じゅう';
+      if (manIchi > 0) result += ones[manIchi];
+      result += 'まん';
+    } else if (man === 1) {
+      result += 'いちまん';
+    } else {
+      result += ones[man] + 'まん';
+    }
     n %= 10000;
   }
 
