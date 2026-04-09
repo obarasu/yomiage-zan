@@ -231,55 +231,40 @@ h2 {
   font-size: 0.85rem;
 }
 
-/* Single slider rows */
-.slider-row {
+/* Select dropdowns */
+.select-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 6px 0;
+  gap: 8px;
 }
-.slider-label {
-  font-size: 0.85rem;
+.select-connector {
+  font-size: 1.1rem;
   color: var(--text-light);
-  width: 32px;
-  flex-shrink: 0;
+  font-weight: 600;
 }
-.single-slider {
+.styled-select {
   flex: 1;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  color: var(--text);
+  cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  height: 6px;
-  background: var(--border);
-  border-radius: 3px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%2364748b'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+.styled-select:focus {
+  border-color: var(--primary);
   outline: none;
 }
-.single-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--primary);
-  border: 3px solid white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  cursor: pointer;
-}
-.single-slider::-moz-range-thumb {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--primary);
-  border: 3px solid white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  cursor: pointer;
-}
-.slider-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--primary);
-  width: 28px;
-  text-align: center;
-  flex-shrink: 0;
+.styled-select.full-width {
+  width: 100%;
 }
 
 /* Kuchi buttons */
@@ -575,23 +560,18 @@ h2 {
 
     <!-- 出題桁数 -->
     <div class="setting-group">
-      <label>出題桁数の範囲 (<span id="digit-range-label">1〜3桁</span>)</label>
-      <div class="slider-row">
-        <span class="slider-label">下限</span>
-        <input type="range" min="1" max="12" value="1" class="single-slider" id="digit-min-slider">
-        <span class="slider-value" id="digit-min-value">1</span>
-      </div>
-      <div class="slider-row">
-        <span class="slider-label">上限</span>
-        <input type="range" min="1" max="12" value="3" class="single-slider" id="digit-max-slider">
-        <span class="slider-value" id="digit-max-value">3</span>
+      <label>出題桁数の範囲</label>
+      <div class="select-row">
+        <select class="styled-select" id="digit-min-select"></select>
+        <span class="select-connector">〜</span>
+        <select class="styled-select" id="digit-max-select"></select>
       </div>
     </div>
 
     <!-- 口数 -->
     <div class="setting-group">
       <label>口数</label>
-      <div class="kuchi-buttons" id="kuchi-options"></div>
+      <select class="styled-select full-width" id="kuchi-select"></select>
     </div>
 
     <!-- 数字表示 -->
@@ -704,64 +684,52 @@ const speedToParam = { 1: 'slow', 2: 'normal', 3: 'fast' };
 // Settings UI Init
 // ══════════════════════════════════
 function initSettingsUI() {
-  // Digit range slider
-  initDigitSlider();
-
-  // Kuchi (3-15)
-  const kuchiEl = document.getElementById('kuchi-options');
-  kuchiEl.innerHTML = '';
-  for (let k = 3; k <= 15; k++) {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn' + (config.kuchi === k ? ' selected' : '');
-    btn.textContent = k;
-    btn.onclick = () => { config.kuchi = k; refreshSelected(kuchiEl, btn); };
-    kuchiEl.appendChild(btn);
-  }
+  initDigitSelects();
+  initKuchiSelect();
 }
 
-function initDigitSlider() {
-  const minSlider = document.getElementById('digit-min-slider');
-  const maxSlider = document.getElementById('digit-max-slider');
-  const minValue = document.getElementById('digit-min-value');
-  const maxValue = document.getElementById('digit-max-value');
-  const label = document.getElementById('digit-range-label');
+function initDigitSelects() {
+  const minSelect = document.getElementById('digit-min-select');
+  const maxSelect = document.getElementById('digit-max-select');
 
-  minSlider.value = config.digitMin;
-  maxSlider.value = config.digitMax;
+  // Populate options
+  for (let d = 1; d <= 12; d++) {
+    const optMin = document.createElement('option');
+    optMin.value = d; optMin.textContent = d + '桁';
+    if (d === config.digitMin) optMin.selected = true;
+    minSelect.appendChild(optMin);
 
-  function update() {
-    let minVal = parseInt(minSlider.value);
-    let maxVal = parseInt(maxSlider.value);
-
-    // Enforce min <= max
-    if (minVal > maxVal) { maxSlider.value = minVal; maxVal = minVal; }
-    if (maxVal < minVal) { minSlider.value = maxVal; minVal = maxVal; }
-
-    config.digitMin = minVal;
-    config.digitMax = maxVal;
-    minValue.textContent = minVal;
-    maxValue.textContent = maxVal;
-
-    if (minVal === maxVal) {
-      label.textContent = minVal + '桁';
-    } else {
-      label.textContent = minVal + '〜' + maxVal + '桁';
-    }
+    const optMax = document.createElement('option');
+    optMax.value = d; optMax.textContent = d + '桁';
+    if (d === config.digitMax) optMax.selected = true;
+    maxSelect.appendChild(optMax);
   }
 
-  minSlider.addEventListener('input', () => {
-    if (parseInt(minSlider.value) > parseInt(maxSlider.value)) {
-      maxSlider.value = minSlider.value;
+  minSelect.addEventListener('change', () => {
+    config.digitMin = parseInt(minSelect.value);
+    if (config.digitMin > config.digitMax) {
+      config.digitMax = config.digitMin;
+      maxSelect.value = config.digitMax;
     }
-    update();
   });
-  maxSlider.addEventListener('input', () => {
-    if (parseInt(maxSlider.value) < parseInt(minSlider.value)) {
-      minSlider.value = maxSlider.value;
+  maxSelect.addEventListener('change', () => {
+    config.digitMax = parseInt(maxSelect.value);
+    if (config.digitMax < config.digitMin) {
+      config.digitMin = config.digitMax;
+      minSelect.value = config.digitMin;
     }
-    update();
   });
-  update();
+}
+
+function initKuchiSelect() {
+  const select = document.getElementById('kuchi-select');
+  for (let k = 3; k <= 15; k++) {
+    const opt = document.createElement('option');
+    opt.value = k; opt.textContent = k + '口';
+    if (k === config.kuchi) opt.selected = true;
+    select.appendChild(opt);
+  }
+  select.addEventListener('change', () => { config.kuchi = parseInt(select.value); });
   }
 }
 
