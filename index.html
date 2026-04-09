@@ -1006,17 +1006,16 @@ function buildDisplayItems() {
 // ══════════════════════════════════
 function buildSpeechText() {
   const parts = [];
-  parts.push('ねがいましては〜〜、');
+  parts.push('願いましては、');
 
-  let currentMode = 'add'; // track add/subtract mode
+  let currentMode = 'add';
 
   numbers.forEach((n, i) => {
     const absN = Math.abs(n);
-    const yomi = numberToYomi(absN);
+    const formatted = absN.toLocaleString();
     const isLast = (i === numbers.length - 1);
     const isSubtract = n < 0;
 
-    // Mode switching: 「ひいては」で減算開始、「くわえて」で加算に戻る
     if (isSubtract && currentMode === 'add') {
       parts.push('ひいては、');
       currentMode = 'subtract';
@@ -1026,9 +1025,9 @@ function buildSpeechText() {
     }
 
     if (isLast) {
-      parts.push(yomi + ' えん、では〜。');
+      parts.push(formatted + '円、では。');
     } else {
-      parts.push(yomi + ' えん、なり〜、');
+      parts.push(formatted + '円、なり、');
     }
   });
 
