@@ -812,19 +812,20 @@ function buildSpeechText() {
 
   numbers.forEach((n, i) => {
     const absN = Math.abs(n);
+    const formatted = absN.toLocaleString(); // カンマ区切りで正しい読みに
     const isLast = (i === numbers.length - 1);
 
     if (isLast) {
       if (n < 0) {
-        parts.push('ひく' + absN + '円では〜。');
+        parts.push('ひく' + formatted + '円では〜。');
       } else {
-        parts.push(absN + '円では〜。');
+        parts.push(formatted + '円では〜。');
       }
     } else {
       if (n < 0) {
-        parts.push('ひく' + absN + '円、');
+        parts.push('ひく' + formatted + '円、');
       } else {
-        parts.push(absN + '円なり〜、');
+        parts.push(formatted + '円なり〜、');
       }
     }
   });
@@ -922,10 +923,10 @@ async function startGame() {
 
     if (n < 0) {
       numText = '−' + absN.toLocaleString();
-      readText = isLast ? ('ひく' + absN + '円では') : ('ひく' + absN + '円');
+      readText = isLast ? ('ひく' + absN.toLocaleString() + '円では') : ('ひく' + absN.toLocaleString() + '円');
     } else {
       numText = absN.toLocaleString();
-      readText = isLast ? (absN + '円では') : (absN + '円なり');
+      readText = isLast ? (absN.toLocaleString() + '円では') : (absN.toLocaleString() + '円なり');
     }
     displayItems.push({ text: readText, number: numText });
   });
@@ -1150,10 +1151,10 @@ async function replayWithCurrentNumbers() {
     let readText, numText;
     if (n < 0) {
       numText = '−' + absN.toLocaleString();
-      readText = isLast ? ('ひく' + absN + '円では') : ('ひく' + absN + '円');
+      readText = isLast ? ('ひく' + absN.toLocaleString() + '円では') : ('ひく' + absN.toLocaleString() + '円');
     } else {
       numText = absN.toLocaleString();
-      readText = isLast ? (absN + '円では') : (absN + '円なり');
+      readText = isLast ? (absN.toLocaleString() + '円では') : (absN.toLocaleString() + '円なり');
     }
     displayItems.push({ text: readText, number: numText });
   });
