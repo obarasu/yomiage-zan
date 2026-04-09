@@ -15,15 +15,21 @@
   --primary: #6366f1;
   --primary-light: #818cf8;
   --primary-dark: #4f46e5;
+  --primary-bg: #eef2ff;
   --accent: #f59e0b;
   --success: #22c55e;
+  --success-bg: #dcfce7;
   --danger: #ef4444;
+  --danger-bg: #fee2e2;
   --bg: #f8fafc;
   --card: #ffffff;
   --text: #1e293b;
   --text-light: #64748b;
+  --border: #e2e8f0;
   --radius: 16px;
+  --radius-sm: 12px;
   --shadow: 0 4px 24px rgba(99,102,241,0.12);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 html, body {
@@ -36,41 +42,43 @@ html, body {
   user-select: none;
 }
 
+/* ── Screens ── */
 .screen {
   display: none;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   min-height: 100dvh;
   padding: 24px 16px;
-  gap: 20px;
+  gap: 16px;
 }
 .screen.active { display: flex; }
 
+/* ── Typography ── */
 h1 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: var(--primary);
   text-align: center;
 }
 h2 {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   color: var(--primary);
   text-align: center;
 }
 
+/* ── Buttons ── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  padding: 16px 32px;
+  padding: 14px 28px;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s;
-  min-height: 56px;
-  min-width: 120px;
+  min-height: 52px;
+  min-width: 100px;
   touch-action: manipulation;
 }
 .btn:active { transform: scale(0.96); }
@@ -83,129 +91,221 @@ h2 {
 .btn-primary:hover { background: var(--primary-dark); }
 
 .btn-secondary {
-  background: #e2e8f0;
+  background: var(--border);
   color: var(--text);
 }
 
-.btn-accent {
-  background: var(--accent);
+.btn-success {
+  background: var(--success);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
 }
 
 .btn-large {
-  font-size: 1.5rem;
-  padding: 24px 48px;
-  border-radius: 24px;
+  font-size: 1.4rem;
+  padding: 20px 40px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 320px;
+  max-width: 340px;
 }
 
-.btn-icon {
-  font-size: 2rem;
-  padding: 0;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
 }
 
-/* ── Top Screen ── */
-#screen-top .mode-buttons {
+/* ── Toggle Switch ── */
+.toggle-row {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  max-width: 320px;
-  margin-top: 16px;
 }
-#screen-top .subtitle {
-  color: var(--text-light);
-  font-size: 1rem;
-  margin-top: -8px;
+.toggle-row .toggle-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
 }
-.logo-emoji { font-size: 4rem; margin-bottom: 8px; }
+.toggle {
+  position: relative;
+  width: 52px;
+  height: 30px;
+  flex-shrink: 0;
+}
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #cbd5e1;
+  border-radius: 15px;
+  transition: 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 24px;
+  width: 24px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.toggle input:checked + .toggle-slider {
+  background: var(--primary);
+}
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(22px);
+}
 
-/* ── Settings Screen ── */
+/* ══════════════════════════════════
+   SETTINGS SCREEN
+   ══════════════════════════════════ */
 #screen-settings {
   justify-content: flex-start;
-  padding-top: 48px;
+  padding-top: 32px;
+  padding-bottom: 100px;
 }
 .settings-card {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 24px 20px;
+  padding: 20px 16px;
   width: 100%;
   max-width: 400px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 .setting-group label {
   display: block;
   font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 10px;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
   color: var(--text);
+}
+.setting-group .setting-hint {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-bottom: 6px;
 }
 .option-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 .option-btn {
   flex: 1;
-  min-width: 60px;
-  padding: 12px 8px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  min-width: 52px;
+  padding: 10px 6px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
   background: #fff;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
   transition: all 0.15s;
   color: var(--text);
+  touch-action: manipulation;
 }
 .option-btn.selected {
   border-color: var(--primary);
-  background: #eef2ff;
+  background: var(--primary-bg);
   color: var(--primary);
 }
-.settings-actions {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  max-width: 400px;
-}
-.settings-actions .btn { flex: 1; }
 
-/* ── Play Screen ── */
+/* Speed stars */
+.speed-btn {
+  min-width: 48px;
+  font-size: 0.85rem;
+}
+
+/* Digit range */
+.digit-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.digit-range .range-label {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+.digit-range .option-buttons {
+  flex: 1;
+}
+.digit-range .option-btn {
+  min-width: 36px;
+  padding: 8px 4px;
+  font-size: 0.85rem;
+}
+
+/* Kuchi buttons */
+.kuchi-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.kuchi-buttons .option-btn {
+  min-width: unset;
+  padding: 10px 4px;
+  font-size: 0.9rem;
+}
+
+/* Start button fixed at bottom */
+.start-btn-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(transparent, var(--bg) 30%);
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* ══════════════════════════════════
+   GAME (PLAY) SCREEN
+   ══════════════════════════════════ */
 #screen-play {
   background: #1e1b4b;
   justify-content: center;
   gap: 0;
+  position: relative;
 }
-#screen-play .play-status {
-  color: rgba(255,255,255,0.6);
-  font-size: 1rem;
-  margin-bottom: 12px;
+.play-status {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.95rem;
+  margin-bottom: 8px;
 }
-#screen-play .play-number {
+.play-number {
   color: #fff;
-  font-size: 4rem;
+  font-size: 4.5rem;
   font-weight: 900;
   text-align: center;
-  min-height: 80px;
+  min-height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.15s;
+  padding: 0 16px;
 }
-#screen-play .play-reading {
+.play-reading {
   color: var(--primary-light);
-  font-size: 1.2rem;
-  margin-top: 12px;
+  font-size: 1.1rem;
+  margin-top: 8px;
   min-height: 2em;
   text-align: center;
 }
@@ -225,23 +325,64 @@ h2 {
   transition: width 0.3s;
   width: 0%;
 }
+.stop-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 1rem;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.stop-btn:active { background: rgba(255,255,255,0.25); }
 
-/* ── Answer Screen ── */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1e1b4b;
+  gap: 16px;
+  z-index: 5;
+}
+.loading-overlay .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255,255,255,0.2);
+  border-top-color: var(--primary-light);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading-overlay p {
+  color: rgba(255,255,255,0.7);
+  font-size: 1.1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════════════════════════
+   ANSWER (INPUT) SCREEN
+   ══════════════════════════════════ */
 #screen-answer {
   justify-content: flex-start;
-  padding-top: 40px;
+  padding-top: 36px;
 }
 .answer-display {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 16px 20px;
   width: 100%;
   max-width: 360px;
   text-align: right;
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 900;
   color: var(--text);
-  min-height: 80px;
+  min-height: 72px;
   box-shadow: var(--shadow);
   display: flex;
   align-items: center;
@@ -253,128 +394,203 @@ h2 {
 .numpad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   max-width: 320px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 .numpad-btn {
   font-size: 1.6rem;
   font-weight: 700;
-  padding: 18px;
+  padding: 16px;
   border: none;
   border-radius: 14px;
   background: var(--card);
   color: var(--text);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: transform 0.08s;
   touch-action: manipulation;
+  min-height: 56px;
 }
 .numpad-btn:active { transform: scale(0.94); background: #f1f5f9; }
-.numpad-btn.special { background: #e2e8f0; font-size: 1.2rem; }
+.numpad-btn.special { background: var(--border); font-size: 1.2rem; }
 .numpad-btn.minus-btn { background: #fef3c7; color: #92400e; }
-.numpad-btn.minus-btn.negative { background: #ef4444; color: #fff; }
+.numpad-btn.minus-btn.negative { background: var(--danger); color: #fff; }
 
 .answer-actions {
   width: 100%;
   max-width: 320px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 .answer-actions .btn { width: 100%; }
 
-/* ── Result Screen ── */
+/* ══════════════════════════════════
+   RESULT SCREEN
+   ══════════════════════════════════ */
 #screen-result {
-  gap: 24px;
+  justify-content: center;
+  gap: 20px;
 }
 .result-mark {
-  font-size: 8rem;
+  font-size: 7rem;
   line-height: 1;
 }
-.result-correct {
-  color: var(--success);
+.result-correct { color: var(--success); }
+.result-wrong { color: var(--danger); }
+
+.result-info {
+  text-align: center;
 }
-.result-wrong {
+.result-label {
+  font-size: 1rem;
+  color: var(--text-light);
+  margin-bottom: 4px;
+}
+.result-value {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--text);
+}
+.result-your-answer {
+  font-size: 1rem;
+  color: var(--text-light);
+  margin-top: 8px;
+}
+.result-your-answer strong {
   color: var(--danger);
 }
-.result-answer {
-  font-size: 1.2rem;
-  color: var(--text-light);
-}
-.result-answer strong {
-  font-size: 2rem;
-  color: var(--text);
-  display: block;
-  margin-top: 4px;
-}
+
 .result-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   max-width: 320px;
   margin-top: 8px;
 }
 .result-actions .btn { width: 100%; }
 
-/* Animation */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .fade-in { animation: fadeIn 0.3s ease; }
 
-@keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
 .pop { animation: pop 0.4s ease; }
 
-@keyframes flash-in { from { opacity: 0; transform: scale(1.3); } to { opacity: 1; transform: scale(1); } }
+@keyframes flash-in {
+  from { opacity: 0; transform: scale(1.3); }
+  to { opacity: 1; transform: scale(1); }
+}
 .flash-in { animation: flash-in 0.25s ease-out; }
+
+/* ── Responsive ── */
+@media (max-width: 360px) {
+  .play-number { font-size: 3.5rem; }
+  .answer-display { font-size: 2.2rem; }
+  .numpad-btn { padding: 14px; font-size: 1.4rem; }
+}
 </style>
 </head>
 <body>
 
-<!-- ===== TOP ===== -->
-<div id="screen-top" class="screen active">
-  <div class="logo-emoji">🧮</div>
-  <h1>読み上げ算</h1>
-  <p class="subtitle">そろばん れんしゅう</p>
-  <div class="mode-buttons">
-    <button class="btn btn-primary btn-large" onclick="selectMode('soroban')">🧮 読み上げ算</button>
-    <button class="btn btn-accent btn-large" onclick="selectMode('anzan')">🧠 読み上げ暗算</button>
-  </div>
-</div>
-
-<!-- ===== SETTINGS ===== -->
-<div id="screen-settings" class="screen">
-  <h2 id="settings-title">せってい</h2>
+<!-- ===== SETTINGS SCREEN (initial) ===== -->
+<div id="screen-settings" class="screen active">
+  <h1>🧮 読み上げ算</h1>
   <div class="settings-card fade-in">
+
+    <!-- 計算種類 -->
     <div class="setting-group">
-      <label>けたすう</label>
-      <div class="option-buttons" id="digits-options"></div>
+      <label>計算種類</label>
+      <div class="option-buttons" id="calc-type-options">
+        <button class="option-btn selected" onclick="setCalcType('add')" id="btn-calc-add">加算のみ</button>
+        <button class="option-btn" onclick="setCalcType('addsub')" id="btn-calc-addsub">加減算</button>
+      </div>
     </div>
+
+    <!-- 読み上げ速度 -->
     <div class="setting-group">
-      <label>くちすう（なんかい よむか）</label>
-      <div class="option-buttons" id="count-options"></div>
+      <label>読み上げ速度</label>
+      <div class="option-buttons" id="speed-options">
+        <button class="option-btn speed-btn" onclick="setSpeed(1)" id="btn-speed-1">★1</button>
+        <button class="option-btn speed-btn" onclick="setSpeed(2)" id="btn-speed-2">★2</button>
+        <button class="option-btn speed-btn selected" onclick="setSpeed(3)" id="btn-speed-3">★3</button>
+        <button class="option-btn speed-btn" onclick="setSpeed(4)" id="btn-speed-4">★4</button>
+        <button class="option-btn speed-btn" onclick="setSpeed(5)" id="btn-speed-5">★5</button>
+      </div>
     </div>
+
+    <!-- 出題桁数 -->
     <div class="setting-group">
-      <label>はやさ</label>
-      <div class="option-buttons" id="speed-options"></div>
+      <label>出題桁数</label>
+      <div class="digit-range">
+        <span class="range-label">下限</span>
+        <div class="option-buttons" id="digit-min-options"></div>
+      </div>
+      <div class="digit-range" style="margin-top:6px;">
+        <span class="range-label">上限</span>
+        <div class="option-buttons" id="digit-max-options"></div>
+      </div>
     </div>
+
+    <!-- 口数 -->
+    <div class="setting-group">
+      <label>口数</label>
+      <div class="kuchi-buttons" id="kuchi-options"></div>
+    </div>
+
+    <!-- 数字表示 -->
+    <div class="setting-group">
+      <div class="toggle-row">
+        <span class="toggle-label">読み上げ中の数字表示</span>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-show-number" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 自動解答表示 -->
+    <div class="setting-group">
+      <div class="toggle-row">
+        <span class="toggle-label">出題後の自動解答表示</span>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-auto-answer">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
   </div>
-  <div class="settings-actions">
-    <button class="btn btn-secondary" onclick="showScreen('screen-top')">もどる</button>
-    <button class="btn btn-primary" onclick="startGame()">スタート</button>
+
+  <div class="start-btn-wrap">
+    <button class="btn btn-primary btn-large" onclick="startGame()">スタート</button>
   </div>
 </div>
 
-<!-- ===== PLAY ===== -->
+<!-- ===== GAME (PLAY) SCREEN ===== -->
 <div id="screen-play" class="screen">
+  <button class="stop-btn" onclick="stopGame()">■ やめる</button>
   <p class="play-status" id="play-status"></p>
   <div class="play-number" id="play-number"></div>
   <p class="play-reading" id="play-reading"></p>
   <div class="progress-bar"><div class="progress-bar-inner" id="progress-bar"></div></div>
+  <div class="loading-overlay" id="loading-overlay" style="display:none;">
+    <div class="spinner"></div>
+    <p>音声を準備中...</p>
+  </div>
 </div>
 
-<!-- ===== ANSWER ===== -->
+<!-- ===== ANSWER (INPUT) SCREEN ===== -->
 <div id="screen-answer" class="screen">
-  <h2>こたえを いれてね</h2>
+  <h2>こたえを入れてね</h2>
   <div class="answer-display" id="answer-display"><span class="placeholder">0</span></div>
   <div class="numpad">
     <button class="numpad-btn" onclick="inputDigit('7')">7</button>
@@ -391,68 +607,99 @@ h2 {
     <button class="numpad-btn special" onclick="backspace()">⌫</button>
   </div>
   <div class="answer-actions">
-    <button class="btn btn-primary btn-large" onclick="checkAnswer()">こたえ合わせ</button>
+    <button class="btn btn-primary btn-large" onclick="submitAnswer()">解答する</button>
   </div>
 </div>
 
-<!-- ===== RESULT ===== -->
+<!-- ===== RESULT SCREEN ===== -->
 <div id="screen-result" class="screen">
   <div class="result-mark pop" id="result-mark"></div>
-  <div class="result-answer" id="result-detail"></div>
+  <div class="result-info">
+    <div class="result-label">正解</div>
+    <div class="result-value" id="result-correct-value"></div>
+    <div class="result-your-answer" id="result-your-answer"></div>
+  </div>
   <div class="result-actions">
-    <button class="btn btn-primary btn-large" onclick="retry()">もう いっかい</button>
-    <button class="btn btn-secondary" onclick="showScreen('screen-settings')">せってい に もどる</button>
+    <button class="btn btn-primary" onclick="retryGame()">この問題にもう一度挑戦</button>
+    <button class="btn btn-success" onclick="newGame()">同じ設定で新しい問題</button>
+    <button class="btn btn-secondary" onclick="goToSettings()">設定に戻る</button>
   </div>
 </div>
 
 <script>
-// ── State ──
-let mode = 'soroban'; // soroban | anzan
-let config = { digits: 2, count: 5, speed: 'normal' };
+// ══════════════════════════════════
+// State
+// ══════════════════════════════════
+let config = {
+  calcType: 'add',     // 'add' | 'addsub'
+  speed: 3,            // 1-5
+  digitMin: 1,
+  digitMax: 3,
+  kuchi: 5,
+  showNumber: true,
+  autoAnswer: false
+};
+
 let numbers = [];
 let correctAnswer = 0;
 let userAnswer = '';
 let isNegative = false;
+let currentAudio = null;
+let displayInterval = null;
+let lastSpeechText = '';
 
-// ── Speed map (ms between numbers) ──
-const speedMap = {
-  slow: { label: 'ゆっくり', delay: 2800, rate: 0.85 },
-  normal: { label: 'ふつう', delay: 2000, rate: 1.0 },
-  fast: { label: 'はやい', delay: 1400, rate: 1.15 },
-  vfast: { label: 'とてもはやい', delay: 900, rate: 1.3 }
-};
+// Speed: ★ → TTS param
+const speedToParam = { 1: 'slow', 2: 'slow', 3: 'normal', 4: 'fast', 5: 'veryfast' };
 
-// ── Init Settings UI ──
-function initSettings() {
-  const digitsEl = document.getElementById('digits-options');
-  const countEl = document.getElementById('count-options');
-  const speedEl = document.getElementById('speed-options');
-
-  digitsEl.innerHTML = '';
-  for (let d = 1; d <= 6; d++) {
+// ══════════════════════════════════
+// Settings UI Init
+// ══════════════════════════════════
+function initSettingsUI() {
+  // Digit min (1-10)
+  const minEl = document.getElementById('digit-min-options');
+  minEl.innerHTML = '';
+  for (let d = 1; d <= 10; d++) {
     const btn = document.createElement('button');
-    btn.className = 'option-btn' + (config.digits === d ? ' selected' : '');
-    btn.textContent = d + 'けた';
-    btn.onclick = () => { config.digits = d; refreshSelected(digitsEl, btn); };
-    digitsEl.appendChild(btn);
+    btn.className = 'option-btn' + (config.digitMin === d ? ' selected' : '');
+    btn.textContent = d;
+    btn.onclick = () => {
+      config.digitMin = d;
+      if (config.digitMax < d) { config.digitMax = d; renderDigitMax(); }
+      refreshSelected(minEl, btn);
+    };
+    minEl.appendChild(btn);
   }
 
-  countEl.innerHTML = '';
-  for (let c = 3; c <= 15; c++) {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn' + (config.count === c ? ' selected' : '');
-    btn.textContent = c + 'くち';
-    btn.onclick = () => { config.count = c; refreshSelected(countEl, btn); };
-    countEl.appendChild(btn);
-  }
+  renderDigitMax();
 
-  speedEl.innerHTML = '';
-  for (const [key, val] of Object.entries(speedMap)) {
+  // Kuchi (3-15)
+  const kuchiEl = document.getElementById('kuchi-options');
+  kuchiEl.innerHTML = '';
+  for (let k = 3; k <= 15; k++) {
     const btn = document.createElement('button');
-    btn.className = 'option-btn' + (config.speed === key ? ' selected' : '');
-    btn.textContent = val.label;
-    btn.onclick = () => { config.speed = key; refreshSelected(speedEl, btn); };
-    speedEl.appendChild(btn);
+    btn.className = 'option-btn' + (config.kuchi === k ? ' selected' : '');
+    btn.textContent = k;
+    btn.onclick = () => { config.kuchi = k; refreshSelected(kuchiEl, btn); };
+    kuchiEl.appendChild(btn);
+  }
+}
+
+function renderDigitMax() {
+  const maxEl = document.getElementById('digit-max-options');
+  maxEl.innerHTML = '';
+  for (let d = 1; d <= 15; d++) {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (config.digitMax === d ? ' selected' : '');
+    if (d < config.digitMin) {
+      btn.style.opacity = '0.3';
+      btn.style.pointerEvents = 'none';
+    }
+    btn.textContent = d;
+    btn.onclick = () => {
+      config.digitMax = d;
+      refreshSelected(maxEl, btn);
+    };
+    maxEl.appendChild(btn);
   }
 }
 
@@ -461,45 +708,88 @@ function refreshSelected(container, selectedBtn) {
   selectedBtn.classList.add('selected');
 }
 
-// ── Screen Management ──
+function setCalcType(type) {
+  config.calcType = type;
+  document.getElementById('btn-calc-add').classList.toggle('selected', type === 'add');
+  document.getElementById('btn-calc-addsub').classList.toggle('selected', type === 'addsub');
+}
+
+function setSpeed(level) {
+  config.speed = level;
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('btn-speed-' + i).classList.toggle('selected', i === level);
+  }
+}
+
+// ══════════════════════════════════
+// Screen Management
+// ══════════════════════════════════
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-function selectMode(m) {
-  mode = m;
-  initSettings();
-  document.getElementById('settings-title').textContent =
-    m === 'soroban' ? '🧮 読み上げ算 せってい' : '🧠 読み上げ暗算 せってい';
+function goToSettings() {
+  cleanupAudio();
   showScreen('screen-settings');
 }
 
-// ── Number Generation ──
+function stopGame() {
+  cleanupAudio();
+  showScreen('screen-settings');
+}
+
+function cleanupAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
+  if (displayInterval) {
+    clearInterval(displayInterval);
+    displayInterval = null;
+  }
+}
+
+// ══════════════════════════════════
+// Number Generation
+// ══════════════════════════════════
 function generateNumbers() {
   numbers = [];
-  const d = config.digits;
-  const min = d === 1 ? 1 : Math.pow(10, d - 1);
-  const max = Math.pow(10, d) - 1;
+  const dMin = config.digitMin;
+  const dMax = config.digitMax;
+
+  function randomNumber() {
+    // Pick random digit count between min and max
+    const d = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+    const lo = d === 1 ? 1 : Math.pow(10, d - 1);
+    const hi = Math.pow(10, d) - 1;
+    return randInt(lo, hi);
+  }
 
   // First number always positive
-  numbers.push(randInt(min, max));
-
+  numbers.push(randomNumber());
   let runningTotal = numbers[0];
 
-  for (let i = 1; i < config.count; i++) {
-    // ~25% chance of subtraction
-    const subtract = Math.random() < 0.25;
-    let n = randInt(min, max);
+  for (let i = 1; i < config.kuchi; i++) {
+    const isLast = (i === config.kuchi - 1);
+    let n = randomNumber();
 
-    if (subtract) {
-      // Don't let running total go extremely negative for young learners
-      // But allow some negative results
-      if (n > runningTotal + max) {
-        n = randInt(min, Math.min(max, runningTotal + Math.floor(max / 2)));
+    // ~25% chance of subtraction in addsub mode
+    const doSubtract = config.calcType === 'addsub' && Math.random() < 0.25;
+
+    if (doSubtract) {
+      // Ensure running total doesn't go negative
+      if (n > runningTotal) {
+        n = randInt(1, Math.max(1, runningTotal - 1));
       }
-      numbers.push(-n);
-      runningTotal -= n;
+      if (n > 0 && n <= runningTotal) {
+        numbers.push(-n);
+        runningTotal -= n;
+      } else {
+        numbers.push(n);
+        runningTotal += n;
+      }
     } else {
       numbers.push(n);
       runningTotal += n;
@@ -513,100 +803,67 @@ function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// ── Japanese Number Reading ──
-function numberToJapanese(n) {
-  if (n === 0) return 'ぜろ';
+// ══════════════════════════════════
+// Speech Text Builder
+// ══════════════════════════════════
+function buildSpeechText() {
+  const parts = [];
+  parts.push('願いましては〜〜、');
 
-  const absN = Math.abs(n);
-  let result = '';
+  numbers.forEach((n, i) => {
+    const absN = Math.abs(n);
+    const isLast = (i === numbers.length - 1);
 
-  // 万の位
-  const man = Math.floor(absN / 10000);
-  if (man > 0) {
-    if (man === 1) result += 'いちまん';
-    else result += digitToJapanese(man) + 'まん';
-  }
-
-  // 千の位
-  const sen = Math.floor((absN % 10000) / 1000);
-  if (sen > 0) {
-    switch (sen) {
-      case 1: result += 'せん'; break;
-      case 3: result += 'さんぜん'; break;
-      case 8: result += 'はっせん'; break;
-      default: result += digitToJapanese(sen) + 'せん';
+    if (isLast) {
+      if (n < 0) {
+        parts.push('ひく' + absN + '円では〜。');
+      } else {
+        parts.push(absN + '円では〜。');
+      }
+    } else {
+      if (n < 0) {
+        parts.push('ひく' + absN + '円、');
+      } else {
+        parts.push(absN + '円なり〜、');
+      }
     }
-  }
-
-  // 百の位
-  const hyaku = Math.floor((absN % 1000) / 100);
-  if (hyaku > 0) {
-    switch (hyaku) {
-      case 1: result += 'ひゃく'; break;
-      case 3: result += 'さんびゃく'; break;
-      case 6: result += 'ろっぴゃく'; break;
-      case 8: result += 'はっぴゃく'; break;
-      default: result += digitToJapanese(hyaku) + 'ひゃく';
-    }
-  }
-
-  // 十の位
-  const juu = Math.floor((absN % 100) / 10);
-  if (juu > 0) {
-    if (juu === 1) result += 'じゅう';
-    else result += digitToJapanese(juu) + 'じゅう';
-  }
-
-  // 一の位
-  const ichi = absN % 10;
-  if (ichi > 0) {
-    result += digitToJapanese(ichi);
-  }
-
-  return result;
-}
-
-function digitToJapanese(d) {
-  const map = ['', 'いち', 'に', 'さん', 'よん', 'ご', 'ろく', 'なな', 'はち', 'きゅう'];
-  return map[d] || '';
-}
-
-// Gemini Pro TTS - single call for entire sequence
-let preloadedAudio = null;
-
-async function preloadTTS(fullText) {
-  const speedParam = config.speed === 'slow' ? 'slow' : config.speed === 'fast' ? 'fast' : config.speed === 'veryfast' ? 'veryfast' : 'normal';
-  try {
-    const res = await fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: fullText, speed: speedParam })
-    });
-    if (!res.ok) throw new Error('TTS API error');
-    const { audioContent, mimeType } = await res.json();
-    // PCM audio needs WAV header or use audio/wav
-    const mime = mimeType || 'audio/wav';
-    const audio = new Audio('data:' + mime + ';base64,' + audioContent);
-    return audio;
-  } catch (e) {
-    console.error('TTS preload failed:', e);
-    return null;
-  }
-}
-
-function playAudio(audio) {
-  if (!audio) return Promise.resolve();
-  return new Promise((resolve) => {
-    audio.onended = resolve;
-    audio.onerror = resolve;
-    audio.play().catch(resolve);
   });
+
+  return parts.join('');
 }
 
-// ── Game Flow ──
-function startGame() {
+// ══════════════════════════════════
+// TTS
+// ══════════════════════════════════
+async function fetchTTS(text) {
+  const speedParam = speedToParam[config.speed] || 'normal';
+  const res = await fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: text, speed: speedParam })
+  });
+  if (!res.ok) throw new Error('TTS API error: ' + res.status);
+  const { audioContent, mimeType } = await res.json();
+  const mime = mimeType || 'audio/wav';
+  const audio = new Audio('data:' + mime + ';base64,' + audioContent);
+  return audio;
+}
+
+// ══════════════════════════════════
+// Game Flow
+// ══════════════════════════════════
+async function startGame() {
+  // Read toggle states
+  config.showNumber = document.getElementById('toggle-show-number').checked;
+  config.autoAnswer = document.getElementById('toggle-auto-answer').checked;
+
   generateNumbers();
+  lastSpeechText = buildSpeechText();
+
+  // Show play screen with loading
   showScreen('screen-play');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  loadingOverlay.style.display = 'flex';
 
   const playNumber = document.getElementById('play-number');
   const playReading = document.getElementById('play-reading');
@@ -615,102 +872,148 @@ function startGame() {
 
   playNumber.textContent = '';
   playReading.textContent = '';
-  playStatus.textContent = mode === 'soroban' ? '🧮 読み上げ算' : '🧠 読み上げ暗算';
+  playStatus.textContent = '';
   progressBar.style.width = '0%';
 
-  // Build full speech text for Gemini TTS
-  const lines = ['願いましては〜〜、'];
-  const displayTexts = [''];
-  numbers.forEach(n => {
-    const absN = Math.abs(n);
-    if (n < 0) {
-      lines.push('ひく、' + absN.toLocaleString() + '円、');
-      displayTexts.push('−' + absN.toLocaleString());
-    } else {
-      lines.push(absN.toLocaleString() + '円、なり、');
-      displayTexts.push(absN.toLocaleString());
-    }
-  });
-  lines.push('では〜。');
-  displayTexts.push('');
-
-  const fullText = lines.join('\n');
-
-  // Show loading
-  playReading.textContent = '音声を準備中...';
-  playNumber.textContent = '🎵';
-  progressBar.style.width = '0%';
-
-  // Preload single audio
-  preloadedAudio = await preloadTTS(fullText);
-
-  if (!preloadedAudio) {
+  // Fetch TTS audio
+  let audio;
+  try {
+    audio = await fetchTTS(lastSpeechText);
+  } catch (e) {
+    console.error('TTS failed:', e);
+    loadingOverlay.style.display = 'none';
     playReading.textContent = '音声の準備に失敗しました';
-    setTimeout(() => { showScreen('screen-settings'); showButtons('start'); }, 2000);
+    setTimeout(() => goToSettings(), 2000);
     return;
   }
 
-  // Play audio and update display based on time
-  const totalItems = lines.length;
-  let currentItem = 0;
+  currentAudio = audio;
+  loadingOverlay.style.display = 'none';
 
-  // Estimate timing: divide audio duration evenly (adjusted after metadata loads)
-  preloadedAudio.addEventListener('loadedmetadata', () => {
-    const duration = preloadedAudio.duration;
-    const itemDuration = duration / totalItems;
+  // Build display items for syncing
+  const displayItems = [];
+  displayItems.push({ text: '願いましては', number: '' });
+  numbers.forEach((n, i) => {
+    const absN = Math.abs(n);
+    const isLast = (i === numbers.length - 1);
+    let readText, numText;
 
-    // Update display periodically
-    const displayInterval = setInterval(() => {
-      const elapsed = preloadedAudio.currentTime;
-      const newItem = Math.min(Math.floor(elapsed / itemDuration), totalItems - 1);
-
-      if (newItem !== currentItem) {
-        currentItem = newItem;
-        const isFirst = currentItem === 0;
-        const isLast = currentItem === totalItems - 1;
-
-        if (mode === 'anzan' && !isFirst && !isLast) {
-          playNumber.textContent = '🧠';
-        } else {
-          playNumber.textContent = displayTexts[currentItem] || '';
-        }
-        playNumber.className = 'play-number flash-in';
-        playReading.textContent = lines[currentItem].replace(/[、\n]/g, '');
-      }
-      progressBar.style.width = (elapsed / duration * 100) + '%';
-    }, 100);
-
-    preloadedAudio.onended = () => {
-      clearInterval(displayInterval);
-      progressBar.style.width = '100%';
-      setTimeout(() => {
-        userAnswer = '';
-        isNegative = false;
-        updateAnswerDisplay();
-        updateMinusBtn();
-        showScreen('screen-answer');
-      }, 500);
-    };
+    if (n < 0) {
+      numText = '−' + absN.toLocaleString();
+      readText = isLast ? ('ひく' + absN + '円では') : ('ひく' + absN + '円');
+    } else {
+      numText = absN.toLocaleString();
+      readText = isLast ? (absN + '円では') : (absN + '円なり');
+    }
+    displayItems.push({ text: readText, number: numText });
   });
 
+  const totalItems = displayItems.length;
+  let currentItem = -1;
+
+  function updateDisplay(itemIndex) {
+    if (itemIndex === currentItem || itemIndex >= totalItems) return;
+    currentItem = itemIndex;
+    const item = displayItems[itemIndex];
+
+    if (config.showNumber) {
+      playNumber.textContent = item.number;
+    } else {
+      playNumber.textContent = itemIndex === 0 ? '' : '・';
+    }
+    playNumber.className = 'play-number flash-in';
+    playReading.textContent = item.text;
+    playStatus.textContent = itemIndex === 0 ? '' : (itemIndex + ' / ' + numbers.length);
+  }
+
+  // Wait for metadata to get duration
+  await new Promise((resolve) => {
+    if (audio.readyState >= 1) {
+      resolve();
+    } else {
+      audio.addEventListener('loadedmetadata', resolve, { once: true });
+      // fallback timeout
+      setTimeout(resolve, 3000);
+    }
+  });
+
+  const duration = audio.duration || 0;
+
   // Start playback
-  playNumber.textContent = '';
-  playReading.textContent = 'ねがいましては';
   try {
-    await preloadedAudio.play();
+    await audio.play();
   } catch (e) {
-    playReading.textContent = '再生できませんでした。タップしてください。';
-    const tapHandler = async () => {
-      document.removeEventListener('click', tapHandler);
-      await preloadedAudio.play();
-    };
-    document.addEventListener('click', tapHandler);
+    // Mobile autoplay blocked - wait for tap
+    playReading.textContent = 'タップして再生';
+    playNumber.textContent = '▶';
+    await new Promise((resolve) => {
+      const tapHandler = async () => {
+        document.removeEventListener('click', tapHandler);
+        try { await audio.play(); } catch (err) { /* ignore */ }
+        resolve();
+      };
+      document.addEventListener('click', tapHandler);
+    });
+  }
+
+  // Sync display to audio time
+  if (duration > 0) {
+    const itemDuration = duration / totalItems;
+    displayInterval = setInterval(() => {
+      if (!currentAudio) return;
+      const elapsed = audio.currentTime;
+      const newItem = Math.min(Math.floor(elapsed / itemDuration), totalItems - 1);
+      updateDisplay(newItem);
+      progressBar.style.width = Math.min(100, (elapsed / duration * 100)) + '%';
+    }, 80);
+  } else {
+    // Fallback: no duration available, show items at fixed intervals
+    updateDisplay(0);
+    const fallbackDelay = 2000;
+    let idx = 0;
+    displayInterval = setInterval(() => {
+      idx++;
+      if (idx < totalItems) {
+        updateDisplay(idx);
+        progressBar.style.width = ((idx + 1) / totalItems * 100) + '%';
+      }
+    }, fallbackDelay);
+  }
+
+  // Wait for audio to end
+  await new Promise((resolve) => {
+    audio.onended = resolve;
+    audio.onerror = resolve;
+  });
+
+  // Cleanup interval
+  if (displayInterval) {
+    clearInterval(displayInterval);
+    displayInterval = null;
+  }
+  progressBar.style.width = '100%';
+
+  // Brief pause
+  await new Promise(r => setTimeout(r, 400));
+
+  if (config.autoAnswer) {
+    // Go directly to result (show as "auto" with correct answer)
+    showResult(correctAnswer, true);
+  } else {
+    // Go to input screen
+    userAnswer = '';
+    isNegative = false;
+    updateAnswerDisplay();
+    updateMinusBtn();
+    showScreen('screen-answer');
   }
 }
 
-// ── Answer Input ──
+// ══════════════════════════════════
+// Answer Input
+// ══════════════════════════════════
 function inputDigit(d) {
-  if (userAnswer.length >= 10) return;
+  if (userAnswer.length >= 12) return;
   if (userAnswer === '0') userAnswer = '';
   userAnswer += d;
   updateAnswerDisplay();
@@ -742,34 +1045,189 @@ function updateAnswerDisplay() {
   }
 }
 
-function checkAnswer() {
+function submitAnswer() {
   const val = (isNegative ? -1 : 1) * (parseInt(userAnswer, 10) || 0);
-  const isCorrect = val === correctAnswer;
+  showResult(val, false);
+}
+
+// ══════════════════════════════════
+// Result
+// ══════════════════════════════════
+function showResult(userVal, isAutoAnswer) {
+  const isCorrect = isAutoAnswer || (userVal === correctAnswer);
 
   const markEl = document.getElementById('result-mark');
-  const detailEl = document.getElementById('result-detail');
+  const correctEl = document.getElementById('result-correct-value');
+  const yourAnswerEl = document.getElementById('result-your-answer');
 
-  if (isCorrect) {
+  correctEl.textContent = correctAnswer.toLocaleString() + ' 円';
+
+  if (isAutoAnswer) {
+    markEl.textContent = '📖';
+    markEl.className = 'result-mark pop';
+    markEl.style.color = '#6366f1';
+    yourAnswerEl.textContent = '';
+  } else if (isCorrect) {
     markEl.textContent = '⭕';
     markEl.className = 'result-mark result-correct pop';
-    detailEl.innerHTML = 'せいかい！すごい！<strong>' + correctAnswer.toLocaleString() + '</strong>';
+    markEl.style.color = '';
+    yourAnswerEl.textContent = '';
   } else {
     markEl.textContent = '❌';
     markEl.className = 'result-mark result-wrong pop';
-    detailEl.innerHTML = 'こたえは…<strong>' + correctAnswer.toLocaleString() + '</strong>';
+    markEl.style.color = '';
+    yourAnswerEl.innerHTML = 'あなたの答え: <strong>' + userVal.toLocaleString() + '</strong>';
   }
 
   showScreen('screen-result');
 }
 
-function retry() {
+// ══════════════════════════════════
+// Result Actions
+// ══════════════════════════════════
+function retryGame() {
+  // Same numbers, replay
+  lastSpeechText = buildSpeechText();
+  replayWithCurrentNumbers();
+}
+
+async function replayWithCurrentNumbers() {
+  showScreen('screen-play');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  loadingOverlay.style.display = 'flex';
+
+  const playNumber = document.getElementById('play-number');
+  const playReading = document.getElementById('play-reading');
+  const playStatus = document.getElementById('play-status');
+  const progressBar = document.getElementById('progress-bar');
+
+  playNumber.textContent = '';
+  playReading.textContent = '';
+  playStatus.textContent = '';
+  progressBar.style.width = '0%';
+
+  let audio;
+  try {
+    audio = await fetchTTS(lastSpeechText);
+  } catch (e) {
+    console.error('TTS failed:', e);
+    loadingOverlay.style.display = 'none';
+    playReading.textContent = '音声の準備に失敗しました';
+    setTimeout(() => goToSettings(), 2000);
+    return;
+  }
+
+  currentAudio = audio;
+  loadingOverlay.style.display = 'none';
+
+  const displayItems = [];
+  displayItems.push({ text: '願いましては', number: '' });
+  numbers.forEach((n, i) => {
+    const absN = Math.abs(n);
+    const isLast = (i === numbers.length - 1);
+    let readText, numText;
+    if (n < 0) {
+      numText = '−' + absN.toLocaleString();
+      readText = isLast ? ('ひく' + absN + '円では') : ('ひく' + absN + '円');
+    } else {
+      numText = absN.toLocaleString();
+      readText = isLast ? (absN + '円では') : (absN + '円なり');
+    }
+    displayItems.push({ text: readText, number: numText });
+  });
+
+  const totalItems = displayItems.length;
+  let currentItem = -1;
+
+  function updateDisplay(itemIndex) {
+    if (itemIndex === currentItem || itemIndex >= totalItems) return;
+    currentItem = itemIndex;
+    const item = displayItems[itemIndex];
+    if (config.showNumber) {
+      playNumber.textContent = item.number;
+    } else {
+      playNumber.textContent = itemIndex === 0 ? '' : '・';
+    }
+    playNumber.className = 'play-number flash-in';
+    playReading.textContent = item.text;
+    playStatus.textContent = itemIndex === 0 ? '' : (itemIndex + ' / ' + numbers.length);
+  }
+
+  await new Promise((resolve) => {
+    if (audio.readyState >= 1) resolve();
+    else {
+      audio.addEventListener('loadedmetadata', resolve, { once: true });
+      setTimeout(resolve, 3000);
+    }
+  });
+
+  const duration = audio.duration || 0;
+
+  try {
+    await audio.play();
+  } catch (e) {
+    playReading.textContent = 'タップして再生';
+    playNumber.textContent = '▶';
+    await new Promise((resolve) => {
+      const tapHandler = async () => {
+        document.removeEventListener('click', tapHandler);
+        try { await audio.play(); } catch (err) { /* ignore */ }
+        resolve();
+      };
+      document.addEventListener('click', tapHandler);
+    });
+  }
+
+  if (duration > 0) {
+    const itemDuration = duration / totalItems;
+    displayInterval = setInterval(() => {
+      if (!currentAudio) return;
+      const elapsed = audio.currentTime;
+      const newItem = Math.min(Math.floor(elapsed / itemDuration), totalItems - 1);
+      updateDisplay(newItem);
+      progressBar.style.width = Math.min(100, (elapsed / duration * 100)) + '%';
+    }, 80);
+  } else {
+    updateDisplay(0);
+    let idx = 0;
+    displayInterval = setInterval(() => {
+      idx++;
+      if (idx < totalItems) {
+        updateDisplay(idx);
+        progressBar.style.width = ((idx + 1) / totalItems * 100) + '%';
+      }
+    }, 2000);
+  }
+
+  await new Promise((resolve) => {
+    audio.onended = resolve;
+    audio.onerror = resolve;
+  });
+
+  if (displayInterval) { clearInterval(displayInterval); displayInterval = null; }
+  progressBar.style.width = '100%';
+
+  await new Promise(r => setTimeout(r, 400));
+
+  if (config.autoAnswer) {
+    showResult(correctAnswer, true);
+  } else {
+    userAnswer = '';
+    isNegative = false;
+    updateAnswerDisplay();
+    updateMinusBtn();
+    showScreen('screen-answer');
+  }
+}
+
+function newGame() {
   startGame();
 }
 
-// ── Init ──
-initSettings();
-
-// Google Cloud TTS version - no voice preload needed
+// ══════════════════════════════════
+// Init
+// ══════════════════════════════════
+initSettingsUI();
 </script>
 </body>
 </html>
