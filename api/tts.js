@@ -22,8 +22,8 @@ function pcmToWav(pcmBase64, sampleRate, channels, bitsPerSample) {
   wav.writeUInt16LE(channels, 22);
   wav.writeUInt32LE(sampleRate, 24);
   wav.writeUInt32LE(byteRate, 28);
-  wav.writeUInt16LE(blockAlign, 30);
-  wav.writeUInt16LE(bitsPerSample, 32);
+  wav.writeUInt16LE(blockAlign, 32);
+  wav.writeUInt16LE(bitsPerSample, 34);
 
   // data chunk
   wav.write('data', 36);
