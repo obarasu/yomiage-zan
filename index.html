@@ -758,22 +758,48 @@ function generateNumbers() {
   numbers = [];
   const dMin = config.digitMin;
   const dMax = config.digitMax;
+  const kuchi = config.kuchi;
 
-  function randomNumber() {
-    // Pick random digit count between min and max
-    const d = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+  function randomNumberWithDigits(d) {
     const lo = d === 1 ? 1 : Math.pow(10, d - 1);
     const hi = Math.pow(10, d) - 1;
     return randInt(lo, hi);
   }
 
+  // Build digit assignments: ensure min and max digits are included,
+  // distribute remaining as evenly as possible
+  const digitRange = dMax - dMin + 1;
+  const digitAssignments = [];
+
+  if (dMin === dMax) {
+    // Same digit count for all
+    for (let i = 0; i < kuchi; i++) digitAssignments.push(dMin);
+  } else {
+    // Guarantee at least one of min and one of max
+    digitAssignments.push(dMin);
+    digitAssignments.push(dMax);
+
+    // Fill remaining slots evenly across the range
+    for (let i = 2; i < kuchi; i++) {
+      // Cycle through digit range for even distribution
+      const d = dMin + ((i - 2) % digitRange);
+      digitAssignments.push(d);
+    }
+
+    // Shuffle to randomize order
+    for (let i = digitAssignments.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [digitAssignments[i], digitAssignments[j]] = [digitAssignments[j], digitAssignments[i]];
+    }
+  }
+
+  // Generate numbers with assigned digit counts
   // First number always positive
-  numbers.push(randomNumber());
+  numbers.push(randomNumberWithDigits(digitAssignments[0]));
   let runningTotal = numbers[0];
 
-  for (let i = 1; i < config.kuchi; i++) {
-    const isLast = (i === config.kuchi - 1);
-    let n = randomNumber();
+  for (let i = 1; i < kuchi; i++) {
+    let n = randomNumberWithDigits(digitAssignments[i]);
 
     // ~25% chance of subtraction in addsub mode
     const doSubtract = config.calcType === 'addsub' && Math.random() < 0.25;
