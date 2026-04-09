@@ -571,22 +571,26 @@ function digitToJapanese(d) {
   return map[d] || '';
 }
 
-// Google Cloud TTS - batch preload + play
-let preloadedAudios = [];
+// Gemini Pro TTS - single call for entire sequence
+let preloadedAudio = null;
 
-async function preloadAllTTS(texts) {
+async function preloadTTS(fullText) {
   const speedParam = config.speed === 'slow' ? 'slow' : config.speed === 'fast' ? 'fast' : config.speed === 'veryfast' ? 'veryfast' : 'normal';
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts, speed: speedParam })
+      body: JSON.stringify({ text: fullText, speed: speedParam })
     });
     if (!res.ok) throw new Error('TTS API error');
-    const { audioContents } = await res.json();
-    return audioContents.map(ac => ac ? new Audio('data:audio/mp3;base64,' + ac) : null);
+    const { audioContent, mimeType } = await res.json();
+    // PCM audio needs WAV header or use audio/wav
+    const mime = mimeType || 'audio/wav';
+    const audio = new Audio('data:' + mime + ';base64,' + audioContent);
+    return audio;
   } catch (e) {
-    return texts.map(() => null); // fallback will be used
+    console.error('TTS preload failed:', e);
+    return null;
   }
 }
 
@@ -596,17 +600,6 @@ function playAudio(audio) {
     audio.onended = resolve;
     audio.onerror = resolve;
     audio.play().catch(resolve);
-  });
-}
-
-function speakFallback(text) {
-  return new Promise((resolve) => {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ja-JP';
-    u.rate = 1.0;
-    u.onend = resolve;
-    u.onerror = resolve;
-    speechSynthesis.speak(u);
   });
 }
 
@@ -625,64 +618,71 @@ function startGame() {
   playStatus.textContent = mode === 'soroban' ? '🧮 読み上げ算' : '🧠 読み上げ暗算';
   progressBar.style.width = '0%';
 
-  const sp = speedMap[config.speed];
-  const delay = sp.delay;
-
-  // Build all speech texts first
-  const speechTexts = ['ねがいましては'];
+  // Build full speech text for Gemini TTS
+  const lines = ['願いましては〜〜、'];
   const displayTexts = [''];
   numbers.forEach(n => {
     const absN = Math.abs(n);
-    const reading = numberToJapanese(absN);
     if (n < 0) {
-      speechTexts.push('ひく ' + reading + 'えん');
+      lines.push('ひく、' + absN.toLocaleString() + '円、');
       displayTexts.push('−' + absN.toLocaleString());
     } else {
-      speechTexts.push(reading + 'えん なり');
+      lines.push(absN.toLocaleString() + '円、なり、');
       displayTexts.push(absN.toLocaleString());
     }
   });
-  speechTexts.push('では');
+  lines.push('では〜。');
   displayTexts.push('');
+
+  const fullText = lines.join('\n');
 
   // Show loading
   playReading.textContent = '音声を準備中...';
+  playNumber.textContent = '🎵';
+  progressBar.style.width = '0%';
 
-  // Preload all audio at once
-  preloadedAudios = await preloadAllTTS(speechTexts);
+  // Preload single audio
+  preloadedAudio = await preloadTTS(fullText);
 
-  let step = 0;
-  const totalSteps = speechTexts.length;
+  if (!preloadedAudio) {
+    playReading.textContent = '音声の準備に失敗しました';
+    setTimeout(() => { showScreen('screen-settings'); showButtons('start'); }, 2000);
+    return;
+  }
 
-  async function next() {
-    if (step >= totalSteps) return;
+  // Play audio and update display based on time
+  const totalItems = lines.length;
+  let currentItem = 0;
 
-    const isFirst = step === 0;
-    const isLast = step === totalSteps - 1;
+  // Estimate timing: divide audio duration evenly (adjusted after metadata loads)
+  preloadedAudio.addEventListener('loadedmetadata', () => {
+    const duration = preloadedAudio.duration;
+    const itemDuration = duration / totalItems;
 
-    if (mode === 'anzan' && !isFirst && !isLast) {
-      playNumber.textContent = '🧠';
-    } else {
-      playNumber.textContent = displayTexts[step];
-    }
-    playNumber.className = 'play-number flash-in';
-    playReading.textContent = speechTexts[step];
-    progressBar.style.width = ((step + 1) / totalSteps * 100) + '%';
+    // Update display periodically
+    const displayInterval = setInterval(() => {
+      const elapsed = preloadedAudio.currentTime;
+      const newItem = Math.min(Math.floor(elapsed / itemDuration), totalItems - 1);
 
-    // Play preloaded audio or fallback
-    if (preloadedAudios[step]) {
-      await playAudio(preloadedAudios[step]);
-    } else {
-      await speakFallback(speechTexts[step]);
-    }
+      if (newItem !== currentItem) {
+        currentItem = newItem;
+        const isFirst = currentItem === 0;
+        const isLast = currentItem === totalItems - 1;
 
-    step++;
+        if (mode === 'anzan' && !isFirst && !isLast) {
+          playNumber.textContent = '🧠';
+        } else {
+          playNumber.textContent = displayTexts[currentItem] || '';
+        }
+        playNumber.className = 'play-number flash-in';
+        playReading.textContent = lines[currentItem].replace(/[、\n]/g, '');
+      }
+      progressBar.style.width = (elapsed / duration * 100) + '%';
+    }, 100);
 
-    if (step < totalSteps) {
-      const pauseMs = isFirst ? 400 : Math.max(200, delay - 800);
-      setTimeout(next, pauseMs);
-    } else {
-      // Done - show answer screen
+    preloadedAudio.onended = () => {
+      clearInterval(displayInterval);
+      progressBar.style.width = '100%';
       setTimeout(() => {
         userAnswer = '';
         isNegative = false;
@@ -690,10 +690,22 @@ function startGame() {
         updateMinusBtn();
         showScreen('screen-answer');
       }, 500);
-    }
-  }
+    };
+  });
 
-  setTimeout(next, 800);
+  // Start playback
+  playNumber.textContent = '';
+  playReading.textContent = 'ねがいましては';
+  try {
+    await preloadedAudio.play();
+  } catch (e) {
+    playReading.textContent = '再生できませんでした。タップしてください。';
+    const tapHandler = async () => {
+      document.removeEventListener('click', tapHandler);
+      await preloadedAudio.play();
+    };
+    document.addEventListener('click', tapHandler);
+  }
 }
 
 // ── Answer Input ──
