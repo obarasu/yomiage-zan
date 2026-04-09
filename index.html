@@ -1224,17 +1224,28 @@ async function startGame() {
 
   // Sync display to audio time
   if (duration > 0) {
-    // First item (願いましては) gets ~15% of time, rest split evenly
-    const firstItemTime = duration * 0.12;
-    const restItemDuration = (duration - firstItemTime) / Math.max(1, totalItems - 1);
+    // Weight-based timing: longer numbers get more time
+    // "願いましては" = weight 3, each number = weight based on digit count + fixed
+    const weights = displayItems.map((item, i) => {
+      if (i === 0) return 3; // 願いましては
+      const numStr = item.number.replace(/[−,]/g, '');
+      return Math.max(2, numStr.length) + 1; // more digits = more time
+    });
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    // Build cumulative time boundaries
+    const boundaries = [];
+    let cumTime = 0;
+    for (let i = 0; i < weights.length; i++) {
+      boundaries.push(cumTime);
+      cumTime += (weights[i] / totalWeight) * duration;
+    }
+
     displayInterval = setInterval(() => {
       if (!currentAudio) return;
       const elapsed = audio.currentTime;
-      let newItem;
-      if (elapsed < firstItemTime) {
-        newItem = 0;
-      } else {
-        newItem = Math.min(1 + Math.floor((elapsed - firstItemTime) / restItemDuration), totalItems - 1);
+      let newItem = 0;
+      for (let i = boundaries.length - 1; i >= 0; i--) {
+        if (elapsed >= boundaries[i]) { newItem = i; break; }
       }
       updateDisplay(newItem);
       progressBar.style.width = Math.min(100, (elapsed / duration * 100)) + '%';
@@ -1467,17 +1478,28 @@ async function replayWithCurrentNumbers(useCache) {
   }
 
   if (duration > 0) {
-    // First item (願いましては) gets ~15% of time, rest split evenly
-    const firstItemTime = duration * 0.12;
-    const restItemDuration = (duration - firstItemTime) / Math.max(1, totalItems - 1);
+    // Weight-based timing: longer numbers get more time
+    // "願いましては" = weight 3, each number = weight based on digit count + fixed
+    const weights = displayItems.map((item, i) => {
+      if (i === 0) return 3; // 願いましては
+      const numStr = item.number.replace(/[−,]/g, '');
+      return Math.max(2, numStr.length) + 1; // more digits = more time
+    });
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    // Build cumulative time boundaries
+    const boundaries = [];
+    let cumTime = 0;
+    for (let i = 0; i < weights.length; i++) {
+      boundaries.push(cumTime);
+      cumTime += (weights[i] / totalWeight) * duration;
+    }
+
     displayInterval = setInterval(() => {
       if (!currentAudio) return;
       const elapsed = audio.currentTime;
-      let newItem;
-      if (elapsed < firstItemTime) {
-        newItem = 0;
-      } else {
-        newItem = Math.min(1 + Math.floor((elapsed - firstItemTime) / restItemDuration), totalItems - 1);
+      let newItem = 0;
+      for (let i = boundaries.length - 1; i >= 0; i--) {
+        if (elapsed >= boundaries[i]) { newItem = i; break; }
       }
       updateDisplay(newItem);
       progressBar.style.width = Math.min(100, (elapsed / duration * 100)) + '%';
