@@ -1211,8 +1211,13 @@ async function startGame() {
       playNumber.style.fontSize = '4.5rem';
     }
     playNumber.className = 'play-number flash-in';
-    playReading.textContent = item.text;
-    playStatus.textContent = itemIndex === 0 ? '' : (itemIndex + ' / ' + numbers.length);
+    if (config.showNumber) {
+      playReading.textContent = item.text;
+      playStatus.textContent = itemIndex === 0 ? '' : (itemIndex + ' / ' + numbers.length);
+    } else {
+      playReading.textContent = '';
+      playStatus.textContent = '';
+    }
   }
 
   // Wait for metadata to get duration
@@ -1469,8 +1474,13 @@ async function replayWithCurrentNumbers(useCache) {
       playNumber.style.fontSize = '4.5rem';
     }
     playNumber.className = 'play-number flash-in';
-    playReading.textContent = item.text;
-    playStatus.textContent = itemIndex === 0 ? '' : (itemIndex + ' / ' + numbers.length);
+    if (config.showNumber) {
+      playReading.textContent = item.text;
+      playStatus.textContent = itemIndex === 0 ? '' : (itemIndex + ' / ' + numbers.length);
+    } else {
+      playReading.textContent = '';
+      playStatus.textContent = '';
+    }
   }
 
   await new Promise((resolve) => {
