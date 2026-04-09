@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#6366f1">
+<title>読み上げ算</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --accent: #f59e0b;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --radius: 16px;
+  --shadow: 0 4px 24px rgba(99,102,241,0.12);
+}
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 24px 16px;
+  gap: 20px;
+}
+.screen.active { display: flex; }
+
+h1 {
+  font-size: 2rem;
+  color: var(--primary);
+  text-align: center;
+}
+h2 {
+  font-size: 1.4rem;
+  color: var(--primary);
+  text-align: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 16px 32px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  min-height: 56px;
+  min-width: 120px;
+  touch-action: manipulation;
+}
+.btn:active { transform: scale(0.96); }
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: var(--text);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+}
+
+.btn-large {
+  font-size: 1.5rem;
+  padding: 24px 48px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.btn-icon {
+  font-size: 2rem;
+  padding: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+}
+
+/* ── Top Screen ── */
+#screen-top .mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 16px;
+}
+#screen-top .subtitle {
+  color: var(--text-light);
+  font-size: 1rem;
+  margin-top: -8px;
+}
+.logo-emoji { font-size: 4rem; margin-bottom: 8px; }
+
+/* ── Settings Screen ── */
+#screen-settings {
+  justify-content: flex-start;
+  padding-top: 48px;
+}
+.settings-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.setting-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.option-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.option-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 12px 8px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  color: var(--text);
+}
+.option-btn.selected {
+  border-color: var(--primary);
+  background: #eef2ff;
+  color: var(--primary);
+}
+.settings-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+}
+.settings-actions .btn { flex: 1; }
+
+/* ── Play Screen ── */
+#screen-play {
+  background: #1e1b4b;
+  justify-content: center;
+  gap: 0;
+}
+#screen-play .play-status {
+  color: rgba(255,255,255,0.6);
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+#screen-play .play-number {
+  color: #fff;
+  font-size: 4rem;
+  font-weight: 900;
+  text-align: center;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+}
+#screen-play .play-reading {
+  color: var(--primary-light);
+  font-size: 1.2rem;
+  margin-top: 12px;
+  min-height: 2em;
+  text-align: center;
+}
+.progress-bar {
+  width: 80%;
+  max-width: 300px;
+  height: 6px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+  margin-top: 32px;
+  overflow: hidden;
+}
+.progress-bar-inner {
+  height: 100%;
+  background: var(--primary-light);
+  border-radius: 3px;
+  transition: width 0.3s;
+  width: 0%;
+}
+
+/* ── Answer Screen ── */
+#screen-answer {
+  justify-content: flex-start;
+  padding-top: 40px;
+}
+.answer-display {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  width: 100%;
+  max-width: 360px;
+  text-align: right;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--text);
+  min-height: 80px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+.answer-display .placeholder { color: #cbd5e1; }
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 16px;
+}
+.numpad-btn {
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding: 18px;
+  border: none;
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: transform 0.08s;
+  touch-action: manipulation;
+}
+.numpad-btn:active { transform: scale(0.94); background: #f1f5f9; }
+.numpad-btn.special { background: #e2e8f0; font-size: 1.2rem; }
+.numpad-btn.minus-btn { background: #fef3c7; color: #92400e; }
+.numpad-btn.minus-btn.negative { background: #ef4444; color: #fff; }
+
+.answer-actions {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 16px;
+}
+.answer-actions .btn { width: 100%; }
+
+/* ── Result Screen ── */
+#screen-result {
+  gap: 24px;
+}
+.result-mark {
+  font-size: 8rem;
+  line-height: 1;
+}
+.result-correct {
+  color: var(--success);
+}
+.result-wrong {
+  color: var(--danger);
+}
+.result-answer {
+  font-size: 1.2rem;
+  color: var(--text-light);
+}
+.result-answer strong {
+  font-size: 2rem;
+  color: var(--text);
+  display: block;
+  margin-top: 4px;
+}
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 8px;
+}
+.result-actions .btn { width: 100%; }
+
+/* Animation */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.3s ease; }
+
+@keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+.pop { animation: pop 0.4s ease; }
+
+@keyframes flash-in { from { opacity: 0; transform: scale(1.3); } to { opacity: 1; transform: scale(1); } }
+.flash-in { animation: flash-in 0.25s ease-out; }
+</style>
+</head>
+<body>
+
+<!-- ===== TOP ===== -->
+<div id="screen-top" class="screen active">
+  <div class="logo-emoji">🧮</div>
+  <h1>読み上げ算</h1>
+  <p class="subtitle">そろばん れんしゅう</p>
+  <div class="mode-buttons">
+    <button class="btn btn-primary btn-large" onclick="selectMode('soroban')">🧮 読み上げ算</button>
+    <button class="btn btn-accent btn-large" onclick="selectMode('anzan')">🧠 読み上げ暗算</button>
+  </div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div id="screen-settings" class="screen">
+  <h2 id="settings-title">せってい</h2>
+  <div class="settings-card fade-in">
+    <div class="setting-group">
+      <label>けたすう</label>
+      <div class="option-buttons" id="digits-options"></div>
+    </div>
+    <div class="setting-group">
+      <label>くちすう（なんかい よむか）</label>
+      <div class="option-buttons" id="count-options"></div>
+    </div>
+    <div class="setting-group">
+      <label>はやさ</label>
+      <div class="option-buttons" id="speed-options"></div>
+    </div>
+  </div>
+  <div class="settings-actions">
+    <button class="btn btn-secondary" onclick="showScreen('screen-top')">もどる</button>
+    <button class="btn btn-primary" onclick="startGame()">スタート</button>
+  </div>
+</div>
+
+<!-- ===== PLAY ===== -->
+<div id="screen-play" class="screen">
+  <p class="play-status" id="play-status"></p>
+  <div class="play-number" id="play-number"></div>
+  <p class="play-reading" id="play-reading"></p>
+  <div class="progress-bar"><div class="progress-bar-inner" id="progress-bar"></div></div>
+</div>
+
+<!-- ===== ANSWER ===== -->
+<div id="screen-answer" class="screen">
+  <h2>こたえを いれてね</h2>
+  <div class="answer-display" id="answer-display"><span class="placeholder">0</span></div>
+  <div class="numpad">
+    <button class="numpad-btn" onclick="inputDigit('7')">7</button>
+    <button class="numpad-btn" onclick="inputDigit('8')">8</button>
+    <button class="numpad-btn" onclick="inputDigit('9')">9</button>
+    <button class="numpad-btn" onclick="inputDigit('4')">4</button>
+    <button class="numpad-btn" onclick="inputDigit('5')">5</button>
+    <button class="numpad-btn" onclick="inputDigit('6')">6</button>
+    <button class="numpad-btn" onclick="inputDigit('1')">1</button>
+    <button class="numpad-btn" onclick="inputDigit('2')">2</button>
+    <button class="numpad-btn" onclick="inputDigit('3')">3</button>
+    <button class="numpad-btn minus-btn" id="minus-btn" onclick="toggleMinus()">±</button>
+    <button class="numpad-btn" onclick="inputDigit('0')">0</button>
+    <button class="numpad-btn special" onclick="backspace()">⌫</button>
+  </div>
+  <div class="answer-actions">
+    <button class="btn btn-primary btn-large" onclick="checkAnswer()">こたえ合わせ</button>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="screen-result" class="screen">
+  <div class="result-mark pop" id="result-mark"></div>
+  <div class="result-answer" id="result-detail"></div>
+  <div class="result-actions">
+    <button class="btn btn-primary btn-large" onclick="retry()">もう いっかい</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-settings')">せってい に もどる</button>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let mode = 'soroban'; // soroban | anzan
+let config = { digits: 2, count: 5, speed: 'normal' };
+let numbers = [];
+let correctAnswer = 0;
+let userAnswer = '';
+let isNegative = false;
+
+// ── Speed map (ms between numbers) ──
+const speedMap = {
+  slow: { label: 'ゆっくり', delay: 2800, rate: 0.85 },
+  normal: { label: 'ふつう', delay: 2000, rate: 1.0 },
+  fast: { label: 'はやい', delay: 1400, rate: 1.15 },
+  vfast: { label: 'とてもはやい', delay: 900, rate: 1.3 }
+};
+
+// ── Init Settings UI ──
+function initSettings() {
+  const digitsEl = document.getElementById('digits-options');
+  const countEl = document.getElementById('count-options');
+  const speedEl = document.getElementById('speed-options');
+
+  digitsEl.innerHTML = '';
+  for (let d = 1; d <= 6; d++) {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (config.digits === d ? ' selected' : '');
+    btn.textContent = d + 'けた';
+    btn.onclick = () => { config.digits = d; refreshSelected(digitsEl, btn); };
+    digitsEl.appendChild(btn);
+  }
+
+  countEl.innerHTML = '';
+  for (let c = 3; c <= 15; c++) {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (config.count === c ? ' selected' : '');
+    btn.textContent = c + 'くち';
+    btn.onclick = () => { config.count = c; refreshSelected(countEl, btn); };
+    countEl.appendChild(btn);
+  }
+
+  speedEl.innerHTML = '';
+  for (const [key, val] of Object.entries(speedMap)) {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (config.speed === key ? ' selected' : '');
+    btn.textContent = val.label;
+    btn.onclick = () => { config.speed = key; refreshSelected(speedEl, btn); };
+    speedEl.appendChild(btn);
+  }
+}
+
+function refreshSelected(container, selectedBtn) {
+  container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  selectedBtn.classList.add('selected');
+}
+
+// ── Screen Management ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function selectMode(m) {
+  mode = m;
+  initSettings();
+  document.getElementById('settings-title').textContent =
+    m === 'soroban' ? '🧮 読み上げ算 せってい' : '🧠 読み上げ暗算 せってい';
+  showScreen('screen-settings');
+}
+
+// ── Number Generation ──
+function generateNumbers() {
+  numbers = [];
+  const d = config.digits;
+  const min = d === 1 ? 1 : Math.pow(10, d - 1);
+  const max = Math.pow(10, d) - 1;
+
+  // First number always positive
+  numbers.push(randInt(min, max));
+
+  let runningTotal = numbers[0];
+
+  for (let i = 1; i < config.count; i++) {
+    // ~25% chance of subtraction
+    const subtract = Math.random() < 0.25;
+    let n = randInt(min, max);
+
+    if (subtract) {
+      // Don't let running total go extremely negative for young learners
+      // But allow some negative results
+      if (n > runningTotal + max) {
+        n = randInt(min, Math.min(max, runningTotal + Math.floor(max / 2)));
+      }
+      numbers.push(-n);
+      runningTotal -= n;
+    } else {
+      numbers.push(n);
+      runningTotal += n;
+    }
+  }
+
+  correctAnswer = numbers.reduce((a, b) => a + b, 0);
+}
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// ── Japanese Number Reading ──
+function numberToJapanese(n) {
+  if (n === 0) return 'ぜろ';
+
+  const absN = Math.abs(n);
+  let result = '';
+
+  // 万の位
+  const man = Math.floor(absN / 10000);
+  if (man > 0) {
+    if (man === 1) result += 'いちまん';
+    else result += digitToJapanese(man) + 'まん';
+  }
+
+  // 千の位
+  const sen = Math.floor((absN % 10000) / 1000);
+  if (sen > 0) {
+    switch (sen) {
+      case 1: result += 'せん'; break;
+      case 3: result += 'さんぜん'; break;
+      case 8: result += 'はっせん'; break;
+      default: result += digitToJapanese(sen) + 'せん';
+    }
+  }
+
+  // 百の位
+  const hyaku = Math.floor((absN % 1000) / 100);
+  if (hyaku > 0) {
+    switch (hyaku) {
+      case 1: result += 'ひゃく'; break;
+      case 3: result += 'さんびゃく'; break;
+      case 6: result += 'ろっぴゃく'; break;
+      case 8: result += 'はっぴゃく'; break;
+      default: result += digitToJapanese(hyaku) + 'ひゃく';
+    }
+  }
+
+  // 十の位
+  const juu = Math.floor((absN % 100) / 10);
+  if (juu > 0) {
+    if (juu === 1) result += 'じゅう';
+    else result += digitToJapanese(juu) + 'じゅう';
+  }
+
+  // 一の位
+  const ichi = absN % 10;
+  if (ichi > 0) {
+    result += digitToJapanese(ichi);
+  }
+
+  return result;
+}
+
+function digitToJapanese(d) {
+  const map = ['', 'いち', 'に', 'さん', 'よん', 'ご', 'ろく', 'なな', 'はち', 'きゅう'];
+  return map[d] || '';
+}
+
+function buildUtterance(text, rate) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ja-JP';
+  u.rate = rate || 1.0;
+  // Try to pick a Japanese voice
+  const voices = speechSynthesis.getVoices();
+  const jaVoice = voices.find(v => v.lang === 'ja-JP') || voices.find(v => v.lang.startsWith('ja'));
+  if (jaVoice) u.voice = jaVoice;
+  return u;
+}
+
+// ── Game Flow ──
+function startGame() {
+  generateNumbers();
+  showScreen('screen-play');
+
+  const playNumber = document.getElementById('play-number');
+  const playReading = document.getElementById('play-reading');
+  const playStatus = document.getElementById('play-status');
+  const progressBar = document.getElementById('progress-bar');
+
+  playNumber.textContent = '';
+  playReading.textContent = '';
+  playStatus.textContent = mode === 'soroban' ? '🧮 読み上げ算' : '🧠 読み上げ暗算';
+  progressBar.style.width = '0%';
+
+  const sp = speedMap[config.speed];
+  const rate = sp.rate;
+  const delay = sp.delay;
+
+  // Preload voices
+  speechSynthesis.getVoices();
+
+  let step = 0;
+  const totalSteps = numbers.length + 2; // negaimashite + numbers + deha
+
+  function next() {
+    if (step === 0) {
+      // 願いましては
+      playNumber.textContent = '';
+      playReading.textContent = 'ねがいましては';
+      playNumber.className = 'play-number flash-in';
+      const u = buildUtterance('ねがいましては', rate);
+      u.onend = () => { step++; setTimeout(next, 400); };
+      speechSynthesis.speak(u);
+      progressBar.style.width = ((step + 1) / totalSteps * 100) + '%';
+    } else if (step <= numbers.length) {
+      const idx = step - 1;
+      const n = numbers[idx];
+      const absN = Math.abs(n);
+      const isSubtract = n < 0;
+      const reading = numberToJapanese(absN);
+
+      let displayText, speechText;
+      if (isSubtract) {
+        displayText = '−' + absN.toLocaleString();
+        speechText = 'ひく ' + reading + 'えん';
+      } else {
+        displayText = absN.toLocaleString();
+        speechText = reading + 'えん なり';
+      }
+
+      // For anzan mode, don't show numbers
+      if (mode === 'anzan') {
+        playNumber.textContent = '🧠';
+      } else {
+        playNumber.textContent = displayText;
+      }
+      playNumber.className = 'play-number flash-in';
+      playReading.textContent = speechText;
+      progressBar.style.width = ((step + 1) / totalSteps * 100) + '%';
+
+      const u = buildUtterance(speechText, rate);
+      u.onend = () => {
+        step++;
+        setTimeout(next, Math.max(200, delay - 800));
+      };
+      speechSynthesis.speak(u);
+    } else {
+      // では
+      playNumber.textContent = '';
+      playReading.textContent = 'では';
+      progressBar.style.width = '100%';
+      const u = buildUtterance('では', rate);
+      u.onend = () => {
+        setTimeout(() => {
+          userAnswer = '';
+          isNegative = false;
+          updateAnswerDisplay();
+          updateMinusBtn();
+          showScreen('screen-answer');
+        }, 500);
+      };
+      speechSynthesis.speak(u);
+    }
+  }
+
+  // Small initial delay
+  setTimeout(next, 800);
+}
+
+// ── Answer Input ──
+function inputDigit(d) {
+  if (userAnswer.length >= 10) return;
+  if (userAnswer === '0') userAnswer = '';
+  userAnswer += d;
+  updateAnswerDisplay();
+}
+
+function backspace() {
+  userAnswer = userAnswer.slice(0, -1);
+  updateAnswerDisplay();
+}
+
+function toggleMinus() {
+  isNegative = !isNegative;
+  updateMinusBtn();
+  updateAnswerDisplay();
+}
+
+function updateMinusBtn() {
+  const btn = document.getElementById('minus-btn');
+  btn.classList.toggle('negative', isNegative);
+}
+
+function updateAnswerDisplay() {
+  const el = document.getElementById('answer-display');
+  if (!userAnswer) {
+    el.innerHTML = '<span class="placeholder">0</span>';
+  } else {
+    const sign = isNegative ? '−' : '';
+    el.textContent = sign + Number(userAnswer).toLocaleString();
+  }
+}
+
+function checkAnswer() {
+  const val = (isNegative ? -1 : 1) * (parseInt(userAnswer, 10) || 0);
+  const isCorrect = val === correctAnswer;
+
+  const markEl = document.getElementById('result-mark');
+  const detailEl = document.getElementById('result-detail');
+
+  if (isCorrect) {
+    markEl.textContent = '⭕';
+    markEl.className = 'result-mark result-correct pop';
+    detailEl.innerHTML = 'せいかい！すごい！<strong>' + correctAnswer.toLocaleString() + '</strong>';
+  } else {
+    markEl.textContent = '❌';
+    markEl.className = 'result-mark result-wrong pop';
+    detailEl.innerHTML = 'こたえは…<strong>' + correctAnswer.toLocaleString() + '</strong>';
+  }
+
+  showScreen('screen-result');
+}
+
+function retry() {
+  startGame();
+}
+
+// ── Init ──
+initSettings();
+
+// Preload voices
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = () => {};
+}
+speechSynthesis.getVoices();
+</script>
+</body>
+</html>

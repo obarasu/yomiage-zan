@@ -1,0 +1,11 @@
+{
+  "name": "読み上げ算",
+  "short_name": "読み上げ算",
+  "description": "そろばん読み上げ算・読み上げ暗算の練習アプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#6366f1",
+  "lang": "ja",
+  "icons": []
+}
