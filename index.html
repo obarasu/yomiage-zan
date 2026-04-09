@@ -1207,7 +1207,7 @@ async function startGame() {
       const len = item.number.length;
       playNumber.style.fontSize = len > 10 ? '2rem' : len > 7 ? '2.8rem' : len > 5 ? '3.5rem' : '4.5rem';
     } else {
-      playNumber.textContent = itemIndex === 0 ? '' : '・';
+      playNumber.textContent = '';
       playNumber.style.fontSize = '4.5rem';
     }
     playNumber.className = 'play-number flash-in';
@@ -1470,7 +1470,7 @@ async function replayWithCurrentNumbers(useCache) {
       const len = item.number.length;
       playNumber.style.fontSize = len > 10 ? '2rem' : len > 7 ? '2.8rem' : len > 5 ? '3.5rem' : '4.5rem';
     } else {
-      playNumber.textContent = itemIndex === 0 ? '' : '・';
+      playNumber.textContent = '';
       playNumber.style.fontSize = '4.5rem';
     }
     playNumber.className = 'play-number flash-in';
