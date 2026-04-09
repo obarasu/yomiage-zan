@@ -979,6 +979,13 @@ const persistentAudio = new Audio();
 let currentBlobUrl = null;
 let cachedBlobUrl = null; // Cache for retry
 
+// Prefetch: next problem audio
+let prefetchedBlobUrl = null;
+let prefetchedNumbers = null;
+let prefetchedCorrectAnswer = null;
+let prefetchedSpeechText = null;
+let prefetchInProgress = false;
+
 async function fetchTTS(text, useCache) {
   // If useCache and we have a cached blob, reuse it
   if (useCache && cachedBlobUrl) {
@@ -1167,6 +1174,9 @@ async function startGame() {
     updateAnswerDisplay();
     updateMinusBtn();
     showScreen('screen-answer');
+
+    // Prefetch next problem while user inputs answer
+    prefetchNextProblem();
   }
 }
 
@@ -1241,6 +1251,9 @@ function showResult(userVal, isAutoAnswer) {
   }
 
   showScreen('screen-result');
+
+  // Prefetch next problem while user reviews result
+  prefetchNextProblem();
 }
 
 // ══════════════════════════════════
@@ -1375,7 +1388,72 @@ async function replayWithCurrentNumbers(useCache) {
 }
 
 function newGame() {
-  startGame();
+  // If we have a prefetched problem, use it
+  if (prefetchedBlobUrl && prefetchedNumbers) {
+    numbers = prefetchedNumbers;
+    correctAnswer = prefetchedCorrectAnswer;
+    lastSpeechText = prefetchedSpeechText;
+
+    // Swap prefetch into cache
+    if (currentBlobUrl && currentBlobUrl !== cachedBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+    cachedBlobUrl = prefetchedBlobUrl;
+    currentBlobUrl = prefetchedBlobUrl;
+
+    // Clear prefetch
+    prefetchedBlobUrl = null;
+    prefetchedNumbers = null;
+    prefetchedCorrectAnswer = null;
+    prefetchedSpeechText = null;
+
+    // Play directly using cached audio
+    replayWithCurrentNumbers(true);
+  } else {
+    startGame();
+  }
+}
+
+// Prefetch next problem in background
+async function prefetchNextProblem() {
+  if (prefetchInProgress) return;
+  prefetchInProgress = true;
+  try {
+    // Generate new numbers
+    const savedNumbers = [...numbers];
+    const savedCorrect = correctAnswer;
+    generateNumbers();
+    const nextNumbers = [...numbers];
+    const nextCorrect = correctAnswer;
+    const nextSpeech = buildSpeechText();
+
+    // Restore current state
+    numbers = savedNumbers;
+    correctAnswer = savedCorrect;
+
+    // Fetch TTS in background
+    const speedParam = speedToParam[config.speed] || 'normal';
+    const res = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: nextSpeech, speed: speedParam })
+    });
+    if (!res.ok) throw new Error('prefetch failed');
+    const { audioContent, mimeType } = await res.json();
+    const byteChars = atob(audioContent);
+    const byteArray = new Uint8Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([byteArray], { type: mimeType || 'audio/wav' });
+
+    prefetchedBlobUrl = URL.createObjectURL(blob);
+    prefetchedNumbers = nextNumbers;
+    prefetchedCorrectAnswer = nextCorrect;
+    prefetchedSpeechText = nextSpeech;
+    console.log('Prefetch complete');
+  } catch (e) {
+    console.log('Prefetch failed:', e.message);
+    prefetchedBlobUrl = null;
+    prefetchedNumbers = null;
+  }
+  prefetchInProgress = false;
 }
 
 // ══════════════════════════════════
