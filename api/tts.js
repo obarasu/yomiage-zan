@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
   const cloudKey = process.env.GOOGLE_TTS_API_KEY;
   const geminiKey = process.env.GEMINI_TTS_API_KEY;
 
-  const speakingRate = speed === 'slow' ? 0.7 : speed === 'fast' ? 1.15 : 0.85;
+  const speakingRate = speed === 'slow' ? 0.6 : speed === 'fast' ? 1.15 : 0.85;
 
   // Try Cloud TTS first (fast), fallback to Gemini TTS
   try {
